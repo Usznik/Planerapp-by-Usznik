@@ -1,1 +1,22 @@
-# Planerapp-by-Usznik
+# Metin2 — Dziennik wypraw
+
+## Gotowa aplikacja Windows
+
+Uruchom `Metin2-Dziennik-Wypraw-1.0.0-portable.exe` z folderu `dist`. To wersja przenośna — nie wymaga instalatora ani uruchamiania serwera.
+
+Zadania i postacie zapisują się automatycznie w pliku `metin-plan.json` w folderze danych użytkownika Windows. W aplikacji kliknij **Otwórz folder danych**, aby znaleźć ten plik.
+
+## Budowanie pliku EXE
+
+Wymagany jest Node.js. W folderze projektu uruchom:
+
+```sh
+npm install
+npm run build:win
+```
+
+Wynikowy plik `.exe` pojawi się w folderze `dist`.
+
+## Wersja przeglądarkowa
+
+Można nadal otwierać `index.html` bezpośrednio w Chrome lub Edge. W przeglądarce wybierz plik JSON, żeby aplikacja mogła go aktualizować; wersja EXE zapisuje dane automatycznie i nie potrzebuje tego kroku.

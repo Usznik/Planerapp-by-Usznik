@@ -1,0 +1,36 @@
+{
+  "name": "metin2-dziennik-wypraw",
+  "version": "1.0.0",
+  "description": "Lokalny dziennik zadań dla postaci w Metin2",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "pl.metinplanner.desktop",
+    "productName": "Metin2 Dziennik Wypraw",
+    "asar": true,
+    "files": [
+      "index.html",
+      "main.js",
+      "preload.js",
+      "data/metin-plan.json",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "Metin2-Dziennik-Wypraw-${version}-portable.${ext}"
+    }
+  }
+}

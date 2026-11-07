@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11130f">
+  <title>Metin Planner — plan dnia</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #171512;
+      --panel: #211e19;
+      --panel-soft: #2a261f;
+      --line: #40392e;
+      --text: #e8e0d1;
+      --muted: #b7ad9a;
+      --accent: #b69252;
+      --accent-bright: #d2b778;
+      --green: #879574;
+      --red: #bf8069;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 2px;
+    }
+
+    .shell { max-width: 1320px; margin: 0 auto; padding: 28px 38px 44px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 30px; padding-bottom: 17px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .brand-mark {
+      display: grid;
+      width: 39px;
+      height: 39px;
+      place-items: center;
+      border: 1px solid #75603b;
+      border-radius: 5px;
+      color: var(--accent-bright);
+      background: #29241c;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+    .brand-name { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: .1px; }
+    .brand-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .storage-status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+    .storage-actions { display: flex; align-items: center; gap: 12px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+
+    .intro { margin-bottom: 22px; }
+    .eyebrow { margin: 0 0 7px; color: var(--accent-bright); font-size: 10px; font-weight: 650; letter-spacing: 1px; text-transform: uppercase; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(28px, 3vw, 36px); font-weight: 500; letter-spacing: -.4px; }
+    .intro-copy { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+
+    .characters-panel { margin-bottom: 18px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+    .characters-heading { margin: 0 0 9px; color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .8px; text-transform: uppercase; }
+    .character-row { display: flex; align-items: center; gap: 8px; }
+    .character-tabs { display: flex; min-width: 0; flex: 1; gap: 7px; overflow-x: auto; scrollbar-width: thin; }
+    .character-tab, .add-character-button {
+      display: inline-flex;
+      min-height: 33px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--muted);
+      background: #141711;
+      cursor: pointer;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .character-tab:hover, .add-character-button:hover { border-color: #5b604f; color: var(--text); }
+    .character-tab.active { border-color: #806b3c; color: var(--accent-bright); background: #332b1f; }
+    .character-task-count { color: #858b7e; font-size: 10px; }
+    .character-tab.active .character-task-count { color: #cbb77f; }
+    .add-character-button { flex: 0 0 auto; border-style: dashed; color: var(--accent-bright); }
+    .character-form { display: flex; gap: 8px; margin-top: 11px; }
+    .character-form[hidden] { display: none; }
+    .character-name-input { max-width: 280px; }
+    .character-form .add-button { height: 36px; }
+    .character-cancel { padding: 0 10px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 12px; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+    .stat-card { display: flex; min-width: 0; align-items: baseline; padding: 13px 15px; }
+    .stat-card > div { display: flex; align-items: baseline; gap: 9px; }
+    .stat-card + .stat-card { border-left: 1px solid var(--line); }
+    .stat-label { display: block; color: var(--muted); font-size: 12px; }
+    .stat-value { color: var(--accent-bright); font-size: 19px; font-weight: 650; }
+    .stat-icon { display: none; }
+
+    .workspace { display: grid; grid-template-columns: minmax(300px, .82fr) minmax(0, 1.55fr); gap: 14px; align-items: start; }
+    .panel { min-width: 0; overflow: hidden; }
+    .panel, .stat-card, .characters-panel { background: var(--panel); }
+    .panel { border: 1px solid var(--line); border-radius: 6px; }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 19px 20px 16px; }
+    .panel-heading h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-weight: 500; }
+    .month-controls { display: flex; align-items: center; gap: 9px; }
+    .month-label { min-width: 126px; text-align: center; font-size: 13px; font-weight: 650; text-transform: capitalize; }
+    .icon-button, .today-button, .secondary-button, .filter-button, .row-button {
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      cursor: pointer;
+      transition: border-color .16s, background .16s, color .16s;
+    }
+    .icon-button { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 4px; color: var(--muted); }
+    .icon-button:hover, .today-button:hover, .secondary-button:hover, .row-button:hover { border-color: #5b604f; color: var(--text); }
+    .today-button { padding: 7px 10px; border-radius: 4px; color: var(--muted); font-size: 11px; }
+    .calendar { padding: 0 16px 18px; }
+    .weekdays, .days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .weekday { padding: 8px 0 10px; color: #aaa18e; font-size: 11px; font-weight: 700; text-align: center; text-transform: uppercase; }
+    .day {
+      position: relative;
+      display: flex;
+      min-height: 56px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: #c7c9c0;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .day:hover { background: #2b2720; }
+    .day.outside { color: #8c8576; }
+    .day.today .day-number { color: var(--accent-bright); font-weight: 750; }
+    .day.selected { border-color: #806b3c; color: var(--text); background: #332b1f; }
+    .day.selected .day-number { color: var(--accent-bright); font-weight: 750; }
+    .day-dots { display: flex; min-height: 5px; gap: 3px; }
+    .day-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+    .day-dot.done { background: var(--green); }
+
+    .task-panel { min-height: 0; }
+    .task-heading { align-items: flex-start; }
+    .selected-date { margin: 5px 0 0; color: #c1b6a2; font-size: 12px; text-transform: capitalize; }
+    .task-count { padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .task-form { display: grid; grid-template-columns: minmax(160px, 1.6fr) minmax(110px, .8fr) minmax(120px, .9fr) auto; gap: 9px; padding: 0 20px 16px; }
+    .field { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 4px; outline: none; color: var(--text); background: #191713; font-size: 12px; }
+    .field:focus { border-color: #8c7442; }
+    .field::placeholder { color: #a49a87; opacity: 1; }
+    select.field { color: #d6d7ce; }
+    .add-button { height: 38px; padding: 0 14px; border: 1px solid #8b7141; border-radius: 4px; color: #18150f; background: var(--accent); cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .add-button:hover { background: var(--accent-bright); }
+    .form-extra { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+    .form-extra .field { height: 34px; }
+    .cancel-edit { display: none; padding: 7px 9px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 11px; white-space: nowrap; }
+    .cancel-edit.visible { display: inline-block; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 20px; border-top: 1px solid #292d25; border-bottom: 1px solid #292d25; }
+    .filters { display: flex; gap: 5px; }
+    .filter-button { padding: 6px 9px; border-color: transparent; border-radius: 3px; color: var(--muted); background: transparent; font-size: 11px; }
+    .filter-button.active { border-color: var(--line); color: var(--text); background: #302a21; }
+    .secondary-button { padding: 6px 9px; border-radius: 3px; color: var(--muted); font-size: 11px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    thead { color: #b7ad9a; background: #191713; font-size: 10px; text-transform: uppercase; letter-spacing: .55px; }
+    th { height: 35px; padding: 0 11px; font-weight: 700; white-space: nowrap; }
+    th:first-child, td:first-child { padding-left: 20px; }
+    td { padding: 12px 11px; border-bottom: 1px solid #282c25; color: #d7d9d0; font-size: 12px; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: rgb(255 255 255 / 2%); }
+    .check-cell { width: 42px; }
+    .task-check { width: 16px; height: 16px; accent-color: var(--green); vertical-align: middle; cursor: pointer; }
+    .task-title { display: block; max-width: 320px; overflow-wrap: anywhere; font-weight: 600; }
+    .task-note { display: block; max-width: 320px; margin-top: 4px; overflow-wrap: anywhere; color: #b0a792; font-size: 11px; }
+    tr.is-done .task-title { color: #aaa18e; text-decoration: line-through; }
+    .category { display: inline-block; padding: 5px 7px; border-radius: 6px; color: #cbb77f; background: #302a1d; font-size: 10px; white-space: nowrap; }
+    .category.boss { color: #c89b85; background: #30241f; }
+    .category.pvp { color: #b7a3d0; background: #292431; }
+    .category.market { color: #8eb6b0; background: #1e2b29; }
+    .row-actions { display: flex; justify-content: flex-end; gap: 5px; }
+    .row-button { padding: 5px 7px; border-radius: 6px; color: var(--muted); font-size: 10px; }
+    .row-button.delete:hover { border-color: #70463d; color: var(--red); }
+    .empty-state { padding: 52px 20px; color: var(--muted); text-align: center; }
+    .empty-icon { width: 26px; height: 1px; margin: 0 auto 15px; background: var(--accent); }
+    .empty-state strong { display: block; margin-bottom: 5px; color: #d0d2c8; font-size: 13px; }
+    .empty-state span { font-size: 12px; }
+    .notice { position: fixed; right: 24px; bottom: 24px; z-index: 5; max-width: min(390px, calc(100vw - 32px)); padding: 12px 15px; border: 1px solid #684b3e; border-radius: 10px; color: #f0d6ca; background: #2a201c; box-shadow: 0 10px 35px rgb(0 0 0 / 35%); font-size: 12px; }
+    .notice[hidden] { display: none; }
+    .footer-note { margin: 18px 2px 0; color: #a49a87; font-size: 11px; }
+
+    @media (max-width: 980px) {
+      .shell { padding: 26px 22px 40px; }
+      .workspace { grid-template-columns: 1fr; }
+      .task-panel { order: -1; }
+      .calendar { padding-right: 20px; padding-left: 20px; }
+      .day { min-height: 48px; }
+    }
+    @media (max-width: 620px) {
+      .shell { padding: 20px 14px 32px; }
+      .topbar { margin-bottom: 25px; }
+      .brand-subtitle { font-size: 11px; }
+      .storage-status { font-size: 0; gap: 0; }
+      .storage-status .status-dot { width: 8px; height: 8px; }
+      .storage-actions { gap: 8px; }
+      .file-button { padding: 7px 8px !important; font-size: 10px !important; }
+      .intro-copy { font-size: 13px; line-height: 1.5; }
+      .characters-panel { padding: 13px 12px; }
+      .character-row { align-items: flex-start; flex-direction: column; }
+      .character-tabs { width: 100%; flex: initial; }
+      .character-form { flex-wrap: wrap; }
+      .character-name-input { flex: 1; }
+      .stats { gap: 8px; }
+      .stat-card { padding: 10px 9px; }
+      .stat-card > div { align-items: flex-start; flex-direction: column-reverse; gap: 3px; }
+      .stat-label { font-size: 10px; }
+      .stat-value { font-size: 17px; }
+      .panel-heading { padding-right: 14px; padding-left: 14px; }
+      .calendar { padding-right: 10px; padding-left: 10px; }
+      .day { min-height: 43px; }
+      .task-form { grid-template-columns: minmax(0, 1fr) minmax(110px, .75fr); padding-right: 14px; padding-left: 14px; }
+      .task-form .title-field { grid-column: 1 / -1; }
+      .add-button { width: 100%; }
+      .toolbar { flex-wrap: wrap; padding-right: 14px; padding-left: 14px; }
+      .filters { flex-wrap: wrap; }
+      td { padding: 11px 8px; }
+      th { padding: 0 8px; }
+      th:first-child, td:first-child { padding-left: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">M2</div>
+        <div>
+          <p class="brand-name">Metin2</p>
+          <p class="brand-subtitle">Notatnik wypraw</p>
+        </div>
+      </div>
+      <div class="storage-actions">
+        <div class="storage-status"><span class="status-dot" aria-hidden="true"></span><span id="storage-label">Sprawdzanie zapisu…</span></div>
+        <button class="secondary-button file-button" id="select-json" type="button">Wybierz plik JSON</button>
+        <button class="secondary-button file-button" id="open-data-folder" type="button" hidden>Otwórz folder danych</button>
+      </div>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">Notatki z gry</p>
+      <h1>Dziennik wypraw</h1>
+      <p class="intro-copy">Bossy, misje i dropy — rozpisane po swojemu.</p>
+    </section>
+
+    <section class="characters-panel" aria-labelledby="characters-title">
+      <h2 class="characters-heading" id="characters-title">Postać</h2>
+      <div class="character-row">
+        <div class="character-tabs" id="character-tabs" role="tablist" aria-label="Wybierz postać"></div>
+        <button class="add-character-button" id="show-character-form" type="button">+ Dodaj postać</button>
+      </div>
+      <form class="character-form" id="character-form" hidden>
+        <input class="field character-name-input" id="character-name" maxlength="40" placeholder="Nazwa postaci, np. Dropszeusz" autocomplete="off" required aria-label="Nazwa nowej postaci">
+        <button class="add-button" type="submit">Dodaj</button>
+        <button class="character-cancel" id="cancel-character" type="button">Anuluj</button>
+      </form>
+    </section>
+
+    <section class="stats" aria-label="Podsumowanie zadań">
+      <article class="stat-card"><div><span class="stat-label">Na dziś</span><strong class="stat-value" id="today-count">0</strong></div></article>
+      <article class="stat-card"><div><span class="stat-label">Do zrobienia</span><strong class="stat-value" id="pending-count">0</strong></div></article>
+      <article class="stat-card"><div><span class="stat-label">Ukończone</span><strong class="stat-value" id="done-count">0</strong></div></article>
+    </section>
+
+    <div class="workspace">
+      <section class="panel" aria-labelledby="calendar-title">
+        <div class="panel-heading">
+          <h2 id="calendar-title">Kalendarz</h2>
+          <div class="month-controls">
+            <button class="icon-button" id="prev-month" type="button" aria-label="Poprzedni miesiąc">‹</button>
+            <span class="month-label" id="month-label"></span>
+            <button class="icon-button" id="next-month" type="button" aria-label="Następny miesiąc">›</button>
+          </div>
+          <button class="today-button" id="go-today" type="button">Dziś</button>
+        </div>
+        <div class="calendar">
+          <div class="weekdays" aria-hidden="true">
+            <span class="weekday">Pn</span><span class="weekday">Wt</span><span class="weekday">Śr</span><span class="weekday">Cz</span><span class="weekday">Pt</span><span class="weekday">So</span><span class="weekday">Nd</span>
+          </div>
+          <div class="days" id="calendar-days"></div>
+        </div>
+      </section>
+
+      <section class="panel task-panel" aria-labelledby="tasks-title">
+        <div class="panel-heading task-heading">
+          <div><h2 id="tasks-title">Lista zadań</h2><p class="selected-date" id="selected-date"></p></div>
+          <span class="task-count" id="task-count">0 zadań</span>
+        </div>
+        <form class="task-form" id="task-form">
+          <input class="field title-field" id="task-title" name="title" maxlength="120" placeholder="Co masz do zrobienia?" autocomplete="off" required aria-label="Nazwa zadania">
+          <select class="field" id="task-category" name="category" aria-label="Kategoria zadania">
+            <option>Farmienie</option><option>Boss</option><option>Misja</option><option>PvP</option><option>Handel</option><option>Inne</option>
+          </select>
+          <input class="field" id="task-date" name="date" type="date" required aria-label="Data zadania">
+          <button class="add-button" id="submit-task" type="submit">＋ Dodaj</button>
+          <div class="form-extra">
+            <input class="field" id="task-note" name="note" maxlength="240" placeholder="Notatka (opcjonalnie)" aria-label="Notatka do zadania">
+            <button class="cancel-edit" id="cancel-edit" type="button">Anuluj edycję</button>
+          </div>
+        </form>
+        <div class="toolbar">
+          <div class="filters" role="group" aria-label="Filtr zadań">
+            <button class="filter-button active" type="button" data-filter="all">Wszystkie</button>
+            <button class="filter-button" type="button" data-filter="pending">Do zrobienia</button>
+            <button class="filter-button" type="button" data-filter="done">Ukończone</button>
+          </div>
+          <button class="secondary-button" id="clear-done" type="button">Usuń ukończone</button>
+        </div>
+        <div id="task-content"></div>
+      </section>
+    </div>
+    <p class="footer-note" id="footer-note">Wybierz plik JSON raz, aby aplikacja mogła go później automatycznie odczytywać i aktualizować.</p>
+  </main>
+  <div class="notice" id="notice" role="alert" hidden></div>
+
+  <script>
+    (() => {
+      "use strict";
+      const STORAGE_KEY = "metin-planner-tasks-v1";
+      const CHARACTERS_KEY = "metin-planner-characters-v1";
+      const SELECTED_CHARACTER_KEY = "metin-planner-selected-character-v1";
+      const HANDLE_DB_NAME = "metin-planner-files";
+      const HANDLE_STORE_NAME = "handles";
+      const isDesktopApp = Boolean(window.metinDesktop);
+      const DEFAULT_CHARACTER = { id: "dropszeusz", name: "Dropszeusz" };
+      const today = new Date();
+      const todayKey = toDateKey(today);
+      let selectedDate = todayKey;
+      let shownMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      let activeFilter = "all";
+      let editingId = null;
+      let noticeTimer;
+      let saveQueue = Promise.resolve();
+      let saveGeneration = 0;
+      let fileHandle = null;
+      let characters;
+      let selectedCharacterId;
+      let tasks;
+
+      const elements = {
+        characterTabs: document.querySelector("#character-tabs"),
+        characterForm: document.querySelector("#character-form"),
+        characterName: document.querySelector("#character-name"),
+        showCharacterForm: document.querySelector("#show-character-form"),
+        calendarDays: document.querySelector("#calendar-days"),
+        monthLabel: document.querySelector("#month-label"),
+        selectedDate: document.querySelector("#selected-date"),
+        taskForm: document.querySelector("#task-form"),
+        title: document.querySelector("#task-title"),
+        category: document.querySelector("#task-category"),
+        date: document.querySelector("#task-date"),
+        note: document.querySelector("#task-note"),
+        submit: document.querySelector("#submit-task"),
+        cancelEdit: document.querySelector("#cancel-edit"),
+        taskContent: document.querySelector("#task-content"),
+        taskCount: document.querySelector("#task-count"),
+        notice: document.querySelector("#notice"),
+        storageLabel: document.querySelector("#storage-label"),
+        selectJson: document.querySelector("#select-json"),
+        openDataFolder: document.querySelector("#open-data-folder"),
+        footerNote: document.querySelector("#footer-note")
+      };
+
+      function toDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      }
+
+      function loadLocalData() {
+        let legacyCharacters = [{ ...DEFAULT_CHARACTER }];
+        let legacyTasks = [];
+        let legacySelectedCharacterId = DEFAULT_CHARACTER.id;
+        try {
+          const stored = localStorage.getItem(CHARACTERS_KEY);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (!Array.isArray(parsed)) throw new Error("Nieprawidłowy format zapisanych postaci.");
+            const validCharacters = parsed.filter(character =>
+              character && typeof character.id === "string" &&
+              typeof character.name === "string" && character.name.trim()
+            );
+            if (validCharacters.length) legacyCharacters = validCharacters;
+          }
+          const storedSelectedId = localStorage.getItem(SELECTED_CHARACTER_KEY);
+          if (legacyCharacters.some(character => character.id === storedSelectedId)) {
+            legacySelectedCharacterId = storedSelectedId;
+          }
+          const storedTasks = localStorage.getItem(STORAGE_KEY);
+          if (storedTasks) {
+            const parsedTasks = JSON.parse(storedTasks);
+            if (!Array.isArray(parsedTasks)) throw new Error("Nieprawidłowy format zapisanych zadań.");
+            legacyTasks = parsedTasks.filter(task =>
+              task && typeof task.id === "string" &&
+              typeof task.title === "string" &&
+              typeof task.date === "string" &&
+              typeof task.done === "boolean"
+            ).map(task => ({
+              ...task,
+              characterId: legacyCharacters.some(character => character.id === task.characterId)
+                ? task.characterId
+                : legacyCharacters[0].id
+            }));
+          }
+        } catch (error) {
+          showNotice(`Nie udało się odczytać części starych danych z przeglądarki: ${error.message}`);
+        }
+        return {
+          version: 1,
+          tasks: legacyTasks,
+          characters: legacyCharacters,
+          selectedCharacterId: legacySelectedCharacterId
+        };
+      }
+
+      function isValidData(data) {
+        return data && data.version === 1 &&
+          Array.isArray(data.tasks) && Array.isArray(data.characters) &&
+          data.characters.length > 0 &&
+          data.characters.every(character =>
+            character && typeof character.id === "string" &&
+            typeof character.name === "string" && character.name.trim()
+          ) &&
+          data.characters.some(character => character.id === data.selectedCharacterId) &&
+          data.tasks.every(task =>
+            task && typeof task.id === "string" &&
+            typeof task.title === "string" &&
+            typeof task.date === "string" &&
+            typeof task.done === "boolean" &&
+            data.characters.some(character => character.id === task.characterId)
+          );
+      }
+
+      function applyData(data) {
+        characters = data.characters;
+        selectedCharacterId = data.selectedCharacterId;
+        tasks = data.tasks;
+      }
+
+      function openHandleDatabase() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(HANDLE_DB_NAME, 1);
+          request.onupgradeneeded = () => request.result.createObjectStore(HANDLE_STORE_NAME);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error || new Error("Nie udało się otworzyć pamięci ustawień pliku."));
+        });
+      }
+
+      async function getSavedFileHandle() {
+        const database = await openHandleDatabase();
+        return new Promise((resolve, reject) => {
+          const transaction = database.transaction(HANDLE_STORE_NAME, "readonly");
+          const request = transaction.objectStore(HANDLE_STORE_NAME).get("json-file");
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error || new Error("Nie udało się odczytać zapamiętanego pliku."));
+          transaction.oncomplete = () => database.close();
+          transaction.onerror = () => reject(transaction.error || new Error("Nie udało się odczytać zapamiętanego pliku."));
+        });
+      }
+
+      async function rememberFileHandle(handle) {
+        const database = await openHandleDatabase();
+        return new Promise((resolve, reject) => {
+          const transaction = database.transaction(HANDLE_STORE_NAME, "readwrite");
+          transaction.objectStore(HANDLE_STORE_NAME).put(handle, "json-file");
+          transaction.oncomplete = () => {
+            database.close();
+            resolve();
+          };
+          transaction.onerror = () => {
+            database.close();
+            reject(transaction.error || new Error("Nie udało się zapamiętać wybranego pliku."));
+          };
+          transaction.onabort = () => {
+            database.close();
+            reject(transaction.error || new Error("Nie udało się zapamiętać wybranego pliku."));
+          };
+        });
+      }
+
+      async function readJsonFile(handle) {
+        const text = await (await handle.getFile()).text();
+        if (!text.trim()) return null;
+        const data = JSON.parse(text);
+        if (!isValidData(data)) throw new Error("Wybrany plik nie zawiera prawidłowych danych Metin Planner.");
+        return data;
+      }
+
+      function saveLocalBackup(snapshot) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot.tasks));
+          localStorage.setItem(CHARACTERS_KEY, JSON.stringify(snapshot.characters));
+          localStorage.setItem(SELECTED_CHARACTER_KEY, snapshot.selectedCharacterId);
+          return true;
+        } catch (error) {
+          showNotice(`Nie udało się zaktualizować zapasowej kopii w przeglądarce. (${error.message})`);
+          return false;
+        }
+      }
+
+      function saveData() {
+        const generation = ++saveGeneration;
+        const snapshot = { version: 1, tasks, characters, selectedCharacterId };
+        const serializedSnapshot = JSON.stringify(snapshot);
+        const handle = fileHandle;
+        elements.storageLabel.textContent = isDesktopApp || handle ? "Zapisywanie pliku JSON…" : "Zapisywanie w przeglądarce…";
+        const request = saveQueue.then(async () => {
+          if (isDesktopApp) {
+            const result = await window.metinDesktop.saveData(JSON.parse(serializedSnapshot));
+            elements.footerNote.textContent = `Plik danych: ${result.dataPath}`;
+          } else if (handle) {
+            saveLocalBackup(snapshot);
+            const writable = await handle.createWritable();
+            try {
+              await writable.write(`${JSON.stringify(snapshot, null, 2)}\n`);
+              await writable.close();
+            } catch (error) {
+              await writable.abort().catch(() => {});
+              throw error;
+            }
+          } else {
+            saveLocalBackup(snapshot);
+          }
+          return true;
+        });
+        saveQueue = request.catch(() => false);
+        return request.then(() => {
+          if (generation === saveGeneration) {
+            elements.storageLabel.textContent = isDesktopApp
+              ? "Zapisano na tym komputerze"
+              : handle
+                ? `Zapisano: ${handle.name}`
+                : "Zapisano w przeglądarce — wybierz JSON";
+          }
+          return true;
+        }).catch(error => {
+          if (generation === saveGeneration) elements.storageLabel.textContent = "Błąd zapisu";
+          showNotice(`Nie udało się zapisać danych${isDesktopApp || handle ? " do pliku JSON" : ""}: ${error.message}`);
+          return false;
+        });
+      }
+
+      async function initialize() {
+        if (isDesktopApp) {
+          elements.selectJson.hidden = true;
+          elements.openDataFolder.hidden = false;
+          try {
+            const result = await window.metinDesktop.loadData(loadLocalData());
+            if (!isValidData(result.data)) throw new Error("Plik z danymi ma nieprawidłowy format.");
+            applyData(result.data);
+            elements.storageLabel.textContent = "Zapisano na tym komputerze";
+            elements.footerNote.textContent = `Plik danych: ${result.dataPath}`;
+          } catch (error) {
+            applyData(loadLocalData());
+            elements.storageLabel.textContent = "Błąd odczytu pliku JSON";
+            showNotice(`Nie udało się odczytać danych aplikacji: ${error.message}`);
+          }
+          elements.date.value = todayKey;
+          render();
+          return;
+        }
+
+        try {
+          const savedHandle = await getSavedFileHandle();
+          if (savedHandle) {
+            if (await savedHandle.queryPermission({ mode: "readwrite" }) === "granted") {
+              const data = await readJsonFile(savedHandle);
+              if (data) {
+                fileHandle = savedHandle;
+                applyData(data);
+                elements.storageLabel.textContent = `Zapisano: ${fileHandle.name}`;
+                elements.selectJson.textContent = "Zmień plik JSON";
+                elements.date.value = todayKey;
+                render();
+                return;
+              }
+            } else {
+              elements.storageLabel.textContent = "Kliknij, aby ponownie wybrać plik JSON";
+            }
+          }
+        } catch (error) {
+          showNotice(`Nie udało się odczytać zapamiętanego pliku JSON. Wybierz go ponownie. (${error.message})`);
+        }
+        applyData(loadLocalData());
+        elements.storageLabel.textContent = "Zapis lokalny — wybierz plik JSON";
+        elements.date.value = todayKey;
+        render();
+      }
+
+      async function selectJsonFile() {
+        if (!window.showSaveFilePicker) {
+          showNotice("Ta przeglądarka nie obsługuje automatycznego zapisu do pliku. Użyj Chrome lub Edge.");
+          return;
+        }
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: "metin-plan.json",
+            types: [{ description: "Plik JSON", accept: { "application/json": [".json"] } }]
+          });
+          if (await handle.requestPermission({ mode: "readwrite" }) !== "granted") {
+            showNotice("Przeglądarka nie przyznała dostępu do pliku.");
+            return;
+          }
+          await saveQueue;
+          const selectedData = await readJsonFile(handle);
+          if (selectedData) {
+            const hasCurrentData = tasks.length > 0 || characters.length > 1;
+            if (hasCurrentData && !window.confirm(`Wczytać dane z pliku „${handle.name}” zamiast aktualnie wyświetlanych?`)) return;
+            applyData(selectedData);
+          }
+          fileHandle = handle;
+          await rememberFileHandle(handle);
+          elements.selectJson.textContent = "Zmień plik JSON";
+          const saved = await saveData();
+          if (saved) {
+            elements.date.value = selectedDate;
+            render();
+          }
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            showNotice(`Nie udało się otworzyć pliku JSON: ${error.message}`);
+          }
+        }
+      }
+
+      elements.selectJson.addEventListener("click", selectJsonFile);
+      elements.openDataFolder.addEventListener("click", async () => {
+        try {
+          await window.metinDesktop.showDataFolder();
+        } catch (error) {
+          showNotice(`Nie udało się otworzyć folderu z danymi: ${error.message}`);
+        }
+      });
+
+      function showNotice(message) {
+        elements.notice.textContent = message;
+        elements.notice.hidden = false;
+        window.clearTimeout(noticeTimer);
+        noticeTimer = window.setTimeout(() => { elements.notice.hidden = true; }, 6000);
+      }
+
+      function escapeHTML(value) {
+        return String(value).replace(/[&<>"']/g, character => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[character]);
+      }
+
+      function tasksForCharacter() {
+        return tasks.filter(task => task.characterId === selectedCharacterId);
+      }
+
+      function renderCharacters() {
+        elements.characterTabs.innerHTML = characters.map(character => {
+          const count = tasks.filter(task => task.characterId === character.id).length;
+          return `<button class="character-tab${character.id === selectedCharacterId ? " active" : ""}" type="button" role="tab" data-character-id="${escapeHTML(character.id)}" aria-selected="${character.id === selectedCharacterId}">
+            <span>${escapeHTML(character.name)}</span><span class="character-task-count">${count}</span>
+          </button>`;
+        }).join("");
+      }
+
+      function renderCalendar() {
+        const year = shownMonth.getFullYear();
+        const month = shownMonth.getMonth();
+        elements.monthLabel.textContent = new Intl.DateTimeFormat("pl-PL", { month: "long", year: "numeric" }).format(shownMonth);
+        const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+        const start = new Date(year, month, 1 - firstWeekday);
+        const dayMarkup = [];
+        for (let index = 0; index < 42; index++) {
+          const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index);
+          const key = toDateKey(date);
+          const dayTasks = tasksForCharacter().filter(task => task.date === key);
+          const classes = ["day"];
+          if (date.getMonth() !== month) classes.push("outside");
+          if (key === todayKey) classes.push("today");
+          if (key === selectedDate) classes.push("selected");
+          const dots = dayTasks.slice(0, 3).map(task => `<span class="day-dot${task.done ? " done" : ""}"></span>`).join("");
+          dayMarkup.push(`<button type="button" class="${classes.join(" ")}" data-date="${key}" aria-label="${escapeHTML(new Intl.DateTimeFormat("pl-PL", { dateStyle: "full" }).format(date))}, ${dayTasks.length} zadań" aria-pressed="${key === selectedDate}">
+            <span class="day-number">${date.getDate()}</span><span class="day-dots">${dots}</span>
+          </button>`);
+        }
+        elements.calendarDays.innerHTML = dayMarkup.join("");
+      }
+
+      function renderTasks() {
+        const date = new Date(`${selectedDate}T12:00:00`);
+        elements.selectedDate.textContent = new Intl.DateTimeFormat("pl-PL", { dateStyle: "full" }).format(date);
+        const dayTasks = tasksForCharacter().filter(task => task.date === selectedDate);
+        const visibleTasks = dayTasks.filter(task =>
+          activeFilter === "all" || (activeFilter === "done" ? task.done : !task.done)
+        );
+        elements.taskCount.textContent = `${dayTasks.length} ${dayTasks.length === 1 ? "zadanie" : dayTasks.length >= 2 && dayTasks.length <= 4 ? "zadania" : "zadań"}`;
+
+        if (visibleTasks.length === 0) {
+          const isFiltered = dayTasks.length > 0;
+          elements.taskContent.innerHTML = `<div class="empty-state"><div class="empty-icon" aria-hidden="true"></div><strong>${isFiltered ? "Brak zadań w tym filtrze" : "Spokojny dzień — na razie bez zadań"}</strong><span>${isFiltered ? "Zmień filtr, żeby zobaczyć pozostałe wpisy." : "Dodaj zadanie powyżej albo wybierz inny dzień w kalendarzu."}</span></div>`;
+          return;
+        }
+
+        const rows = visibleTasks.map(task => {
+          const category = escapeHTML(task.category || "Inne");
+          const categoryClass = category === "Boss" ? "boss" : category === "PvP" ? "pvp" : category === "Handel" ? "market" : "";
+          return `<tr class="${task.done ? "is-done" : ""}">
+            <td class="check-cell"><input class="task-check" type="checkbox" data-action="toggle" data-id="${escapeHTML(task.id)}" ${task.done ? "checked" : ""} aria-label="Oznacz jako ${task.done ? "niewykonane" : "wykonane"}: ${escapeHTML(task.title)}"></td>
+            <td><span class="task-title">${escapeHTML(task.title)}</span>${task.note ? `<span class="task-note">${escapeHTML(task.note)}</span>` : ""}</td>
+            <td><span class="category ${categoryClass}">${category}</span></td>
+            <td><div class="row-actions"><button class="row-button" type="button" data-action="edit" data-id="${escapeHTML(task.id)}">Edytuj</button><button class="row-button delete" type="button" data-action="delete" data-id="${escapeHTML(task.id)}">Usuń</button></div></td>
+          </tr>`;
+        }).join("");
+        elements.taskContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="check-cell">✓</th><th>Zadanie</th><th>Kategoria</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      }
+
+      function renderStats() {
+        const characterTasks = tasksForCharacter();
+        const todayTasks = characterTasks.filter(task => task.date === todayKey);
+        document.querySelector("#today-count").textContent = todayTasks.length;
+        document.querySelector("#pending-count").textContent = characterTasks.filter(task => !task.done).length;
+        document.querySelector("#done-count").textContent = characterTasks.filter(task => task.done).length;
+      }
+
+      function render() {
+        renderCharacters();
+        renderCalendar();
+        renderTasks();
+        renderStats();
+      }
+
+      function resetForm() {
+        editingId = null;
+        elements.taskForm.reset();
+        elements.date.value = selectedDate;
+        elements.submit.textContent = "＋ Dodaj";
+        elements.cancelEdit.classList.remove("visible");
+      }
+
+      document.querySelector("#prev-month").addEventListener("click", () => {
+        shownMonth = new Date(shownMonth.getFullYear(), shownMonth.getMonth() - 1, 1);
+        renderCalendar();
+      });
+      document.querySelector("#next-month").addEventListener("click", () => {
+        shownMonth = new Date(shownMonth.getFullYear(), shownMonth.getMonth() + 1, 1);
+        renderCalendar();
+      });
+      document.querySelector("#go-today").addEventListener("click", () => {
+        selectedDate = todayKey;
+        shownMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        elements.date.value = todayKey;
+        render();
+      });
+
+      elements.characterTabs.addEventListener("click", event => {
+        const button = event.target.closest("[data-character-id]");
+        if (!button || button.dataset.characterId === selectedCharacterId) return;
+        selectedCharacterId = button.dataset.characterId;
+        saveData();
+        resetForm();
+        render();
+      });
+
+      elements.showCharacterForm.addEventListener("click", () => {
+        elements.characterForm.hidden = false;
+        elements.characterName.focus();
+      });
+      elements.characterForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const name = elements.characterName.value.trim();
+        if (!name) {
+          showNotice("Wpisz nazwę postaci.");
+          return;
+        }
+        if (characters.some(character => character.name.toLocaleLowerCase("pl-PL") === name.toLocaleLowerCase("pl-PL"))) {
+          showNotice("Postać o tej nazwie już istnieje.");
+          elements.characterName.focus();
+          return;
+        }
+        const newCharacter = {
+          id: globalThis.crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          name
+        };
+        characters.push(newCharacter);
+        selectedCharacterId = newCharacter.id;
+        elements.characterForm.reset();
+        elements.characterForm.hidden = true;
+        resetForm();
+        saveData();
+        render();
+      });
+      document.querySelector("#cancel-character").addEventListener("click", () => {
+        elements.characterForm.reset();
+        elements.characterForm.hidden = true;
+      });
+
+      elements.calendarDays.addEventListener("click", event => {
+        const button = event.target.closest("[data-date]");
+        if (!button) return;
+        selectedDate = button.dataset.date;
+        elements.date.value = selectedDate;
+        render();
+      });
+
+      elements.taskForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const title = elements.title.value.trim();
+        const date = elements.date.value;
+        if (!title || !date) {
+          showNotice("Wpisz nazwę zadania i wybierz datę.");
+          return;
+        }
+        if (editingId) {
+          const task = tasks.find(item => item.id === editingId);
+          if (!task) {
+            showNotice("Nie znaleziono edytowanego zadania. Odśwież listę i spróbuj ponownie.");
+            resetForm();
+            return;
+          }
+          Object.assign(task, { title, date, category: elements.category.value, note: elements.note.value.trim() });
+        } else {
+          tasks.push({
+            id: globalThis.crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            title,
+            date,
+            category: elements.category.value,
+            note: elements.note.value.trim(),
+            characterId: selectedCharacterId,
+            done: false
+          });
+        }
+        selectedDate = date;
+        shownMonth = new Date(`${date}T12:00:00`);
+        shownMonth.setDate(1);
+        const savePromise = saveData();
+        resetForm();
+        render();
+        savePromise.then(saved => {
+          if (saved) elements.title.focus();
+        });
+      });
+
+      elements.taskContent.addEventListener("change", event => {
+        const checkbox = event.target.closest('[data-action="toggle"]');
+        if (!checkbox) return;
+        const task = tasks.find(item => item.id === checkbox.dataset.id);
+        if (!task) return;
+        task.done = checkbox.checked;
+        saveData();
+        render();
+      });
+
+      elements.taskContent.addEventListener("click", event => {
+        const button = event.target.closest("[data-action]");
+        if (!button) return;
+        const task = tasks.find(item => item.id === button.dataset.id);
+        if (!task) return;
+        if (button.dataset.action === "edit") {
+          editingId = task.id;
+          elements.title.value = task.title;
+          elements.category.value = task.category || "Inne";
+          elements.date.value = task.date;
+          elements.note.value = task.note || "";
+          elements.submit.textContent = "Zapisz";
+          elements.cancelEdit.classList.add("visible");
+          elements.title.focus();
+        } else if (button.dataset.action === "delete") {
+          tasks = tasks.filter(item => item.id !== task.id);
+          if (editingId === task.id) resetForm();
+          saveData();
+          render();
+        }
+      });
+
+      elements.cancelEdit.addEventListener("click", resetForm);
+      document.querySelectorAll(".filter-button").forEach(button => {
+        button.addEventListener("click", () => {
+          activeFilter = button.dataset.filter;
+          document.querySelectorAll(".filter-button").forEach(item => item.classList.toggle("active", item === button));
+          renderTasks();
+        });
+      });
+      document.querySelector("#clear-done").addEventListener("click", () => {
+        const characterTasks = tasksForCharacter();
+        const completed = characterTasks.filter(task => task.done).length;
+        if (!completed) {
+          showNotice("Nie ma ukończonych zadań do usunięcia.");
+          return;
+        }
+        if (!window.confirm(`Usunąć wszystkie ukończone zadania (${completed})?`)) return;
+        tasks = tasks.filter(task => task.characterId !== selectedCharacterId || !task.done);
+        saveData();
+        render();
+      });
+
+      void initialize();
+    })();
+  </script>
+</body>
+</html>
