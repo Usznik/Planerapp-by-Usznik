@@ -20,3 +20,12 @@ Wynikowy plik `.exe` pojawi się w folderze `dist`.
 ## Wersja przeglądarkowa
 
 Można nadal otwierać `index.html` bezpośrednio w Chrome lub Edge. W przeglądarce wybierz plik JSON, żeby aplikacja mogła go aktualizować; wersja EXE zapisuje dane automatycznie i nie potrzebuje tego kroku.
+
+
+## Do zrobienia
+-Mozliwosc dodawania notatek do danego dnia
+-mozliwość dodawania zadania do więcej niż 1 dnia
+-ile zarobiłeś danego dnia
+-metiny bossy mini bosy okienko
+-ksiazki , biolog katergoia i pole do zazneczani czy weszło i jak nie wejdzie to przesuwa zadanie jeden dzien do przodu w kalendarzu.
+-Do zrobienia world boss i mozliwosc zacznenia co ile ma się zadanie (poniedzaiłe,sroda,niedziela,poniedziałek)
