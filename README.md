@@ -2,7 +2,7 @@
 
 ## Gotowa aplikacja Windows
 
-Uruchom `Metin2-Dziennik-Wypraw-1.0.0-portable.exe` z folderu `dist`. To wersja przenośna — nie wymaga instalatora ani uruchamiania serwera.
+Uruchom `Metin2-Dziennik-Wypraw-1.0.4-portable.exe` z folderu `dist`. To wersja przenośna — nie wymaga instalatora ani uruchamiania serwera.
 
 Zadania i postacie zapisują się automatycznie w pliku `metin-plan.json` w folderze danych użytkownika Windows. W aplikacji kliknij **Otwórz folder danych**, aby znaleźć ten plik.
 

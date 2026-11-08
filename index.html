@@ -146,20 +146,35 @@
     .day-dots { display: flex; min-height: 5px; gap: 3px; }
     .day-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
     .day-dot.done { background: var(--green); }
+    .day-dot.note { background: #b7a3d0; }
 
     .task-panel { min-height: 0; }
     .task-heading { align-items: flex-start; }
     .selected-date { margin: 5px 0 0; color: #c1b6a2; font-size: 12px; text-transform: capitalize; }
     .task-count { padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: 11px; white-space: nowrap; }
-    .task-form { display: grid; grid-template-columns: minmax(160px, 1.6fr) minmax(110px, .8fr) minmax(120px, .9fr) auto; gap: 9px; padding: 0 20px 16px; }
+    .task-form { display: grid; grid-template-columns: minmax(160px, 1.6fr) minmax(110px, .8fr) minmax(120px, .9fr) auto auto; gap: 9px; padding: 0 20px 16px; }
     .field { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 4px; outline: none; color: var(--text); background: #191713; font-size: 12px; }
     .field:focus { border-color: #8c7442; }
     .field::placeholder { color: #a49a87; opacity: 1; }
     select.field { color: #d6d7ce; }
     .add-button { height: 38px; padding: 0 14px; border: 1px solid #8b7141; border-radius: 4px; color: #18150f; background: var(--accent); cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
     .add-button:hover { background: var(--accent-bright); }
-    .form-extra { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+    .form-extra { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .form-extra .field { height: 34px; }
+    .task-date-list { display: flex; flex-basis: 100%; flex-wrap: wrap; gap: 6px; }
+    .task-date-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: 10px; }
+    .task-date-remove { padding: 0; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 13px; line-height: 1; }
+    .task-date-remove:hover { color: var(--red); }
+    .day-note-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; padding: 0 20px 16px; }
+    .day-note-input { min-height: 54px; height: auto; padding: 9px 11px; resize: vertical; }
+    .day-note-label { grid-column: 1 / -1; margin-bottom: -4px; color: var(--muted); font-size: 11px; }
+    .date-range-dialog { width: min(420px, calc(100vw - 32px)); padding: 22px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: var(--panel); }
+    .date-range-dialog::backdrop { background: rgb(0 0 0 / 65%); }
+    .date-range-dialog h2 { margin: 0 0 8px; font-family: Georgia, "Times New Roman", serif; font-size: 19px; font-weight: 500; }
+    .date-range-copy { margin: 0 0 18px; color: var(--muted); font-size: 12px; }
+    .date-range-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .date-range-field { display: grid; gap: 6px; color: var(--muted); font-size: 11px; }
+    .date-range-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
     .cancel-edit { display: none; padding: 7px 9px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 11px; white-space: nowrap; }
     .cancel-edit.visible { display: inline-block; }
     .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 20px; border-top: 1px solid #292d25; border-bottom: 1px solid #292d25; }
@@ -227,6 +242,7 @@
       .task-form { grid-template-columns: minmax(0, 1fr) minmax(110px, .75fr); padding-right: 14px; padding-left: 14px; }
       .task-form .title-field { grid-column: 1 / -1; }
       .add-button { width: 100%; }
+      .day-note-form { padding-right: 14px; padding-left: 14px; }
       .toolbar { flex-wrap: wrap; padding-right: 14px; padding-left: 14px; }
       .filters { flex-wrap: wrap; }
       td { padding: 11px 8px; }
@@ -242,7 +258,6 @@
         <div class="brand-mark" aria-hidden="true">M2</div>
         <div>
           <p class="brand-name">Metin2</p>
-          <p class="brand-subtitle">Notatnik wypraw</p>
         </div>
       </div>
       <div class="storage-actions">
@@ -251,12 +266,6 @@
         <button class="secondary-button file-button" id="open-data-folder" type="button" hidden>Otwórz folder danych</button>
       </div>
     </header>
-
-    <section class="intro">
-      <p class="eyebrow">Notatki z gry</p>
-      <h1>Dziennik wypraw</h1>
-      <p class="intro-copy">Bossy, misje i dropy — rozpisane po swojemu.</p>
-    </section>
 
     <section class="characters-panel" aria-labelledby="characters-title">
       <h2 class="characters-heading" id="characters-title">Postać</h2>
@@ -301,16 +310,23 @@
           <div><h2 id="tasks-title">Lista zadań</h2><p class="selected-date" id="selected-date"></p></div>
           <span class="task-count" id="task-count">0 zadań</span>
         </div>
+        <form class="day-note-form" id="day-note-form">
+          <label class="day-note-label" for="day-note">Notatka na ten dzień</label>
+          <textarea class="field day-note-input" id="day-note" maxlength="2000" placeholder="Zapisz notatkę dotyczącą wybranego dnia…" aria-label="Notatka na wybrany dzień"></textarea>
+          <button class="secondary-button" type="submit">Zapisz notatkę</button>
+        </form>
         <form class="task-form" id="task-form">
           <input class="field title-field" id="task-title" name="title" maxlength="120" placeholder="Co masz do zrobienia?" autocomplete="off" required aria-label="Nazwa zadania">
           <select class="field" id="task-category" name="category" aria-label="Kategoria zadania">
             <option>Farmienie</option><option>Boss</option><option>Misja</option><option>PvP</option><option>Handel</option><option>Inne</option>
           </select>
-          <input class="field" id="task-date" name="date" type="date" required aria-label="Data zadania">
+          <input class="field" id="task-date" name="date" type="date" required aria-label="Data do przypisania do zadania">
+          <button class="secondary-button" id="add-task-date" type="button">Dodaj zakres</button>
           <button class="add-button" id="submit-task" type="submit">＋ Dodaj</button>
           <div class="form-extra">
             <input class="field" id="task-note" name="note" maxlength="240" placeholder="Notatka (opcjonalnie)" aria-label="Notatka do zadania">
             <button class="cancel-edit" id="cancel-edit" type="button">Anuluj edycję</button>
+            <div class="task-date-list" id="task-date-list" aria-label="Dni przypisane do zadania"></div>
           </div>
         </form>
         <div class="toolbar">
@@ -319,13 +335,27 @@
             <button class="filter-button" type="button" data-filter="pending">Do zrobienia</button>
             <button class="filter-button" type="button" data-filter="done">Ukończone</button>
           </div>
-          <button class="secondary-button" id="clear-done" type="button">Usuń ukończone</button>
+          <button class="secondary-button" id="clear-done" type="button">Usuń ukończone z tego dnia</button>
         </div>
         <div id="task-content"></div>
       </section>
     </div>
     <p class="footer-note" id="footer-note">Wybierz plik JSON raz, aby aplikacja mogła go później automatycznie odczytywać i aktualizować.</p>
   </main>
+  <dialog class="date-range-dialog" id="task-date-dialog" aria-labelledby="task-date-dialog-title">
+    <form id="task-date-range-form">
+      <h2 id="task-date-dialog-title">Wybierz zakres dni</h2>
+      <p class="date-range-copy">Zadanie zostanie przypisane do każdego dnia w wybranym zakresie.</p>
+      <div class="date-range-fields">
+        <label class="date-range-field">Od<input class="field" id="task-date-from" type="date" required></label>
+        <label class="date-range-field">Do<input class="field" id="task-date-to" type="date" required></label>
+      </div>
+      <div class="date-range-actions">
+        <button class="secondary-button" id="cancel-task-date-range" type="button">Anuluj</button>
+        <button class="add-button" type="submit">Dodaj dni</button>
+      </div>
+    </form>
+  </dialog>
   <div class="notice" id="notice" role="alert" hidden></div>
 
   <script>
@@ -333,6 +363,7 @@
       "use strict";
       const STORAGE_KEY = "metin-planner-tasks-v1";
       const CHARACTERS_KEY = "metin-planner-characters-v1";
+      const DAY_NOTES_KEY = "metin-planner-day-notes-v1";
       const SELECTED_CHARACTER_KEY = "metin-planner-selected-character-v1";
       const HANDLE_DB_NAME = "metin-planner-files";
       const HANDLE_STORE_NAME = "handles";
@@ -351,6 +382,9 @@
       let characters;
       let selectedCharacterId;
       let tasks;
+      let dayNotes;
+      let selectedTaskDates = [todayKey];
+      const dayNoteDrafts = new Map();
 
       const elements = {
         characterTabs: document.querySelector("#character-tabs"),
@@ -361,9 +395,17 @@
         monthLabel: document.querySelector("#month-label"),
         selectedDate: document.querySelector("#selected-date"),
         taskForm: document.querySelector("#task-form"),
+        taskDateDialog: document.querySelector("#task-date-dialog"),
+        taskDateRangeForm: document.querySelector("#task-date-range-form"),
+        taskDateFrom: document.querySelector("#task-date-from"),
+        taskDateTo: document.querySelector("#task-date-to"),
+        dayNoteForm: document.querySelector("#day-note-form"),
+        dayNote: document.querySelector("#day-note"),
         title: document.querySelector("#task-title"),
         category: document.querySelector("#task-category"),
         date: document.querySelector("#task-date"),
+        addTaskDate: document.querySelector("#add-task-date"),
+        taskDateList: document.querySelector("#task-date-list"),
         note: document.querySelector("#task-note"),
         submit: document.querySelector("#submit-task"),
         cancelEdit: document.querySelector("#cancel-edit"),
@@ -383,6 +425,7 @@
       function loadLocalData() {
         let legacyCharacters = [{ ...DEFAULT_CHARACTER }];
         let legacyTasks = [];
+        let legacyDayNotes = [];
         let legacySelectedCharacterId = DEFAULT_CHARACTER.id;
         try {
           const stored = localStorage.getItem(CHARACTERS_KEY);
@@ -415,12 +458,22 @@
                 : legacyCharacters[0].id
             }));
           }
+          const storedDayNotes = localStorage.getItem(DAY_NOTES_KEY);
+          if (storedDayNotes) {
+            const parsedDayNotes = JSON.parse(storedDayNotes);
+            if (!Array.isArray(parsedDayNotes)) throw new Error("Nieprawidłowy format zapisanych notatek.");
+            legacyDayNotes = parsedDayNotes.filter(note =>
+              note && typeof note.characterId === "string" &&
+              typeof note.date === "string" && typeof note.text === "string"
+            );
+          }
         } catch (error) {
           showNotice(`Nie udało się odczytać części starych danych z przeglądarki: ${error.message}`);
         }
         return {
           version: 1,
           tasks: legacyTasks,
+          dayNotes: legacyDayNotes,
           characters: legacyCharacters,
           selectedCharacterId: legacySelectedCharacterId
         };
@@ -435,11 +488,28 @@
             typeof character.name === "string" && character.name.trim()
           ) &&
           data.characters.some(character => character.id === data.selectedCharacterId) &&
+          (data.dayNotes === undefined || (
+            Array.isArray(data.dayNotes) &&
+            data.dayNotes.every(note =>
+              note && typeof note.characterId === "string" &&
+              typeof note.date === "string" && typeof note.text === "string" &&
+              data.characters.some(character => character.id === note.characterId)
+            )
+          )) &&
           data.tasks.every(task =>
             task && typeof task.id === "string" &&
             typeof task.title === "string" &&
             typeof task.date === "string" &&
             typeof task.done === "boolean" &&
+            (task.dates === undefined || (
+              Array.isArray(task.dates) && task.dates.length > 0 &&
+              task.dates.every(date => typeof date === "string") &&
+              task.dates.includes(task.date)
+            )) &&
+            (task.completedDates === undefined || (
+              Array.isArray(task.completedDates) &&
+              task.completedDates.every(date => typeof date === "string" && datesForTask(task).includes(date))
+            )) &&
             data.characters.some(character => character.id === task.characterId)
           );
       }
@@ -447,7 +517,19 @@
       function applyData(data) {
         characters = data.characters;
         selectedCharacterId = data.selectedCharacterId;
-        tasks = data.tasks;
+        tasks = data.tasks.map(task => {
+          const dates = Array.isArray(task.dates) && task.dates.length ? task.dates : [task.date];
+          const completedDates = Array.isArray(task.completedDates)
+            ? task.completedDates.filter(date => dates.includes(date))
+            : task.done ? [task.date] : [];
+          return {
+            ...task,
+            dates,
+            completedDates,
+            done: dates.every(date => completedDates.includes(date))
+          };
+        });
+        dayNotes = data.dayNotes || [];
       }
 
       function openHandleDatabase() {
@@ -502,6 +584,7 @@
       function saveLocalBackup(snapshot) {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot.tasks));
+          localStorage.setItem(DAY_NOTES_KEY, JSON.stringify(snapshot.dayNotes));
           localStorage.setItem(CHARACTERS_KEY, JSON.stringify(snapshot.characters));
           localStorage.setItem(SELECTED_CHARACTER_KEY, snapshot.selectedCharacterId);
           return true;
@@ -513,7 +596,7 @@
 
       function saveData() {
         const generation = ++saveGeneration;
-        const snapshot = { version: 1, tasks, characters, selectedCharacterId };
+        const snapshot = { version: 1, tasks, dayNotes, characters, selectedCharacterId };
         const serializedSnapshot = JSON.stringify(snapshot);
         const handle = fileHandle;
         elements.storageLabel.textContent = isDesktopApp || handle ? "Zapisywanie pliku JSON…" : "Zapisywanie w przeglądarce…";
@@ -617,7 +700,7 @@
           await saveQueue;
           const selectedData = await readJsonFile(handle);
           if (selectedData) {
-            const hasCurrentData = tasks.length > 0 || characters.length > 1;
+            const hasCurrentData = tasks.length > 0 || dayNotes.length > 0 || characters.length > 1;
             if (hasCurrentData && !window.confirm(`Wczytać dane z pliku „${handle.name}” zamiast aktualnie wyświetlanych?`)) return;
             applyData(selectedData);
           }
@@ -662,6 +745,36 @@
         return tasks.filter(task => task.characterId === selectedCharacterId);
       }
 
+      function datesForTask(task) {
+        return Array.isArray(task.dates) && task.dates.length ? task.dates : [task.date];
+      }
+
+      function completedDatesForTask(task) {
+        const dates = datesForTask(task);
+        return Array.isArray(task.completedDates)
+          ? task.completedDates.filter(date => dates.includes(date))
+          : task.done ? [task.date] : [];
+      }
+
+      function isTaskDoneOnDate(task, date) {
+        return datesForTask(task).includes(date) && completedDatesForTask(task).includes(date);
+      }
+
+      function dayNoteFor(date, characterId = selectedCharacterId) {
+        return dayNotes.find(note => note.characterId === characterId && note.date === date)?.text || "";
+      }
+
+      function dayNoteKey(date, characterId = selectedCharacterId) {
+        return `${characterId}\u0000${date}`;
+      }
+
+      function renderTaskDates() {
+        elements.taskDateList.innerHTML = selectedTaskDates.map(date => {
+          const label = new Intl.DateTimeFormat("pl-PL", { dateStyle: "medium" }).format(new Date(`${date}T12:00:00`));
+          return `<span class="task-date-chip">${escapeHTML(label)}<button class="task-date-remove" type="button" data-remove-date="${escapeHTML(date)}" aria-label="Usuń dzień ${escapeHTML(label)}">×</button></span>`;
+        }).join("");
+      }
+
       function renderCharacters() {
         elements.characterTabs.innerHTML = characters.map(character => {
           const count = tasks.filter(task => task.characterId === character.id).length;
@@ -681,13 +794,15 @@
         for (let index = 0; index < 42; index++) {
           const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index);
           const key = toDateKey(date);
-          const dayTasks = tasksForCharacter().filter(task => task.date === key);
+          const dayTasks = tasksForCharacter().filter(task => datesForTask(task).includes(key));
+          const hasDayNote = Boolean(dayNoteFor(key));
           const classes = ["day"];
           if (date.getMonth() !== month) classes.push("outside");
           if (key === todayKey) classes.push("today");
           if (key === selectedDate) classes.push("selected");
-          const dots = dayTasks.slice(0, 3).map(task => `<span class="day-dot${task.done ? " done" : ""}"></span>`).join("");
-          dayMarkup.push(`<button type="button" class="${classes.join(" ")}" data-date="${key}" aria-label="${escapeHTML(new Intl.DateTimeFormat("pl-PL", { dateStyle: "full" }).format(date))}, ${dayTasks.length} zadań" aria-pressed="${key === selectedDate}">
+          const dots = dayTasks.slice(0, 3).map(task => `<span class="day-dot${isTaskDoneOnDate(task, key) ? " done" : ""}"></span>`).join("") +
+            (hasDayNote ? '<span class="day-dot note" aria-hidden="true"></span>' : "");
+          dayMarkup.push(`<button type="button" class="${classes.join(" ")}" data-date="${key}" aria-label="${escapeHTML(new Intl.DateTimeFormat("pl-PL", { dateStyle: "full" }).format(date))}, ${dayTasks.length} zadań${hasDayNote ? ", ma notatkę" : ""}" aria-pressed="${key === selectedDate}">
             <span class="day-number">${date.getDate()}</span><span class="day-dots">${dots}</span>
           </button>`);
         }
@@ -697,9 +812,16 @@
       function renderTasks() {
         const date = new Date(`${selectedDate}T12:00:00`);
         elements.selectedDate.textContent = new Intl.DateTimeFormat("pl-PL", { dateStyle: "full" }).format(date);
-        const dayTasks = tasksForCharacter().filter(task => task.date === selectedDate);
+        const noteKey = dayNoteKey(selectedDate);
+        if (elements.dayNote.dataset.key !== noteKey) {
+          elements.dayNote.dataset.key = noteKey;
+          elements.dayNote.value = dayNoteDrafts.has(noteKey) ? dayNoteDrafts.get(noteKey) : dayNoteFor(selectedDate);
+        }
+        const dayTasks = tasksForCharacter().filter(task => datesForTask(task).includes(selectedDate));
         const visibleTasks = dayTasks.filter(task =>
-          activeFilter === "all" || (activeFilter === "done" ? task.done : !task.done)
+          activeFilter === "all" || (activeFilter === "done"
+            ? isTaskDoneOnDate(task, selectedDate)
+            : !isTaskDoneOnDate(task, selectedDate))
         );
         elements.taskCount.textContent = `${dayTasks.length} ${dayTasks.length === 1 ? "zadanie" : dayTasks.length >= 2 && dayTasks.length <= 4 ? "zadania" : "zadań"}`;
 
@@ -712,11 +834,13 @@
         const rows = visibleTasks.map(task => {
           const category = escapeHTML(task.category || "Inne");
           const categoryClass = category === "Boss" ? "boss" : category === "PvP" ? "pvp" : category === "Handel" ? "market" : "";
-          return `<tr class="${task.done ? "is-done" : ""}">
-            <td class="check-cell"><input class="task-check" type="checkbox" data-action="toggle" data-id="${escapeHTML(task.id)}" ${task.done ? "checked" : ""} aria-label="Oznacz jako ${task.done ? "niewykonane" : "wykonane"}: ${escapeHTML(task.title)}"></td>
+          const isDone = isTaskDoneOnDate(task, selectedDate);
+          const deleteLabel = datesForTask(task).length > 1 ? "Usuń z dnia" : "Usuń";
+          return `<tr class="${isDone ? "is-done" : ""}">
+            <td class="check-cell"><input class="task-check" type="checkbox" data-action="toggle" data-id="${escapeHTML(task.id)}" ${isDone ? "checked" : ""} aria-label="Oznacz jako ${isDone ? "niewykonane" : "wykonane"}: ${escapeHTML(task.title)}"></td>
             <td><span class="task-title">${escapeHTML(task.title)}</span>${task.note ? `<span class="task-note">${escapeHTML(task.note)}</span>` : ""}</td>
             <td><span class="category ${categoryClass}">${category}</span></td>
-            <td><div class="row-actions"><button class="row-button" type="button" data-action="edit" data-id="${escapeHTML(task.id)}">Edytuj</button><button class="row-button delete" type="button" data-action="delete" data-id="${escapeHTML(task.id)}">Usuń</button></div></td>
+            <td><div class="row-actions"><button class="row-button" type="button" data-action="edit" data-id="${escapeHTML(task.id)}">Edytuj</button><button class="row-button delete" type="button" data-action="delete" data-id="${escapeHTML(task.id)}" aria-label="${deleteLabel} zadanie ${escapeHTML(task.title)}${datesForTask(task).length > 1 ? ` tylko z ${escapeHTML(new Intl.DateTimeFormat("pl-PL", { dateStyle: "long" }).format(new Date(`${selectedDate}T12:00:00`)))}` : ""}">${deleteLabel}</button></div></td>
           </tr>`;
         }).join("");
         elements.taskContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="check-cell">✓</th><th>Zadanie</th><th>Kategoria</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -724,15 +848,19 @@
 
       function renderStats() {
         const characterTasks = tasksForCharacter();
-        const todayTasks = characterTasks.filter(task => task.date === todayKey);
+        const todayTasks = characterTasks.filter(task => datesForTask(task).includes(todayKey));
         document.querySelector("#today-count").textContent = todayTasks.length;
-        document.querySelector("#pending-count").textContent = characterTasks.filter(task => !task.done).length;
-        document.querySelector("#done-count").textContent = characterTasks.filter(task => task.done).length;
+        const taskOccurrences = characterTasks.flatMap(task =>
+          datesForTask(task).map(date => ({ task, date }))
+        );
+        document.querySelector("#pending-count").textContent = taskOccurrences.filter(({ task, date }) => !isTaskDoneOnDate(task, date)).length;
+        document.querySelector("#done-count").textContent = taskOccurrences.filter(({ task, date }) => isTaskDoneOnDate(task, date)).length;
       }
 
       function render() {
         renderCharacters();
         renderCalendar();
+        renderTaskDates();
         renderTasks();
         renderStats();
       }
@@ -740,7 +868,9 @@
       function resetForm() {
         editingId = null;
         elements.taskForm.reset();
+        selectedTaskDates = [selectedDate];
         elements.date.value = selectedDate;
+        renderTaskDates();
         elements.submit.textContent = "＋ Dodaj";
         elements.cancelEdit.classList.remove("visible");
       }
@@ -756,7 +886,11 @@
       document.querySelector("#go-today").addEventListener("click", () => {
         selectedDate = todayKey;
         shownMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        elements.date.value = todayKey;
+        if (!editingId) {
+          selectedTaskDates = [todayKey];
+          elements.date.value = todayKey;
+          renderTaskDates();
+        }
         render();
       });
 
@@ -806,18 +940,84 @@
         const button = event.target.closest("[data-date]");
         if (!button) return;
         selectedDate = button.dataset.date;
-        elements.date.value = selectedDate;
+        if (!editingId) {
+          selectedTaskDates = [selectedDate];
+          elements.date.value = selectedDate;
+          renderTaskDates();
+        }
         render();
+      });
+
+      elements.dayNote.addEventListener("input", () => {
+        dayNoteDrafts.set(dayNoteKey(selectedDate), elements.dayNote.value);
+      });
+
+      elements.dayNoteForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const text = elements.dayNote.value.trim();
+        const existing = dayNotes.find(note => note.characterId === selectedCharacterId && note.date === selectedDate);
+        if (text) {
+          if (existing) existing.text = text;
+          else dayNotes.push({ characterId: selectedCharacterId, date: selectedDate, text });
+        } else if (existing) {
+          dayNotes = dayNotes.filter(note => note !== existing);
+        }
+        dayNoteDrafts.delete(dayNoteKey(selectedDate));
+        elements.dayNote.value = text;
+        saveData();
+        render();
+      });
+
+      elements.addTaskDate.addEventListener("click", () => {
+        const startDate = elements.date.value || selectedDate;
+        elements.taskDateFrom.value = startDate;
+        elements.taskDateTo.value = startDate;
+        elements.taskDateDialog.showModal();
+      });
+
+      document.querySelector("#cancel-task-date-range").addEventListener("click", () => {
+        elements.taskDateDialog.close();
+      });
+
+      elements.taskDateRangeForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const startDate = elements.taskDateFrom.value;
+        const endDate = elements.taskDateTo.value;
+        if (!startDate || !endDate || endDate < startDate) {
+          showNotice("Data końcowa nie może być wcześniejsza niż data początkowa.");
+          elements.taskDateTo.focus();
+          return;
+        }
+
+        const dates = new Set(selectedTaskDates);
+        const date = new Date(`${startDate}T12:00:00`);
+        const lastDate = new Date(`${endDate}T12:00:00`);
+        while (date <= lastDate) {
+          dates.add(toDateKey(date));
+          date.setDate(date.getDate() + 1);
+        }
+        selectedTaskDates = [...dates].sort();
+        elements.date.value = startDate;
+        renderTaskDates();
+        elements.taskDateDialog.close();
+      });
+
+      elements.taskDateList.addEventListener("click", event => {
+        const button = event.target.closest("[data-remove-date]");
+        if (!button) return;
+        selectedTaskDates = selectedTaskDates.filter(date => date !== button.dataset.removeDate);
+        renderTaskDates();
       });
 
       elements.taskForm.addEventListener("submit", event => {
         event.preventDefault();
         const title = elements.title.value.trim();
-        const date = elements.date.value;
-        if (!title || !date) {
-          showNotice("Wpisz nazwę zadania i wybierz datę.");
+        if (!title || !selectedTaskDates.length) {
+          showNotice("Wpisz nazwę zadania i przypisz do niego co najmniej jeden dzień.");
           return;
         }
+        const dates = [...selectedTaskDates].sort();
+        const date = dates[0];
         if (editingId) {
           const task = tasks.find(item => item.id === editingId);
           if (!task) {
@@ -825,12 +1025,19 @@
             resetForm();
             return;
           }
-          Object.assign(task, { title, date, category: elements.category.value, note: elements.note.value.trim() });
+          const completedDates = completedDatesForTask(task).filter(completedDate => dates.includes(completedDate));
+          Object.assign(task, {
+            title, date, dates, completedDates,
+            done: dates.every(taskDate => completedDates.includes(taskDate)),
+            category: elements.category.value,
+            note: elements.note.value.trim()
+          });
         } else {
           tasks.push({
             id: globalThis.crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
             title,
             date,
+            dates,
             category: elements.category.value,
             note: elements.note.value.trim(),
             characterId: selectedCharacterId,
@@ -853,7 +1060,11 @@
         if (!checkbox) return;
         const task = tasks.find(item => item.id === checkbox.dataset.id);
         if (!task) return;
-        task.done = checkbox.checked;
+        const completedDates = new Set(completedDatesForTask(task));
+        if (checkbox.checked) completedDates.add(selectedDate);
+        else completedDates.delete(selectedDate);
+        task.completedDates = [...completedDates].sort();
+        task.done = datesForTask(task).every(date => completedDates.has(date));
         saveData();
         render();
       });
@@ -867,13 +1078,26 @@
           editingId = task.id;
           elements.title.value = task.title;
           elements.category.value = task.category || "Inne";
-          elements.date.value = task.date;
+          selectedTaskDates = [...datesForTask(task)].sort();
+          elements.date.value = selectedTaskDates[0];
+          renderTaskDates();
           elements.note.value = task.note || "";
           elements.submit.textContent = "Zapisz";
           elements.cancelEdit.classList.add("visible");
           elements.title.focus();
         } else if (button.dataset.action === "delete") {
-          tasks = tasks.filter(item => item.id !== task.id);
+          const dates = datesForTask(task).filter(date => date !== selectedDate);
+          if (dates.length) {
+            const completedDates = completedDatesForTask(task).filter(date => date !== selectedDate && dates.includes(date));
+            Object.assign(task, {
+              date: dates[0],
+              dates,
+              completedDates,
+              done: dates.every(date => completedDates.includes(date))
+            });
+          } else {
+            tasks = tasks.filter(item => item.id !== task.id);
+          }
           if (editingId === task.id) resetForm();
           saveData();
           render();
@@ -890,13 +1114,34 @@
       });
       document.querySelector("#clear-done").addEventListener("click", () => {
         const characterTasks = tasksForCharacter();
-        const completed = characterTasks.filter(task => task.done).length;
+        const completed = characterTasks.filter(task =>
+          datesForTask(task).includes(selectedDate) && isTaskDoneOnDate(task, selectedDate)
+        ).length;
         if (!completed) {
-          showNotice("Nie ma ukończonych zadań do usunięcia.");
+          showNotice("Nie ma ukończonych zadań do usunięcia z tego dnia.");
           return;
         }
-        if (!window.confirm(`Usunąć wszystkie ukończone zadania (${completed})?`)) return;
-        tasks = tasks.filter(task => task.characterId !== selectedCharacterId || !task.done);
+        const dateLabel = new Intl.DateTimeFormat("pl-PL", { dateStyle: "long" }).format(new Date(`${selectedDate}T12:00:00`));
+        if (!window.confirm(`Usunąć ukończone zadania z dnia ${dateLabel} (${completed})?`)) return;
+        tasks = tasks.flatMap(task => {
+          if (
+            task.characterId !== selectedCharacterId ||
+            !datesForTask(task).includes(selectedDate) ||
+            !isTaskDoneOnDate(task, selectedDate)
+          ) {
+            return [task];
+          }
+          const dates = datesForTask(task).filter(date => date !== selectedDate);
+          if (!dates.length) return [];
+          const completedDates = completedDatesForTask(task).filter(date => date !== selectedDate && dates.includes(date));
+          return [{
+            ...task,
+            date: dates[0],
+            dates,
+            completedDates,
+            done: dates.every(date => completedDates.includes(date))
+          }];
+        });
         saveData();
         render();
       });

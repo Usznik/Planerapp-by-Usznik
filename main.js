@@ -39,6 +39,17 @@ function isValidData(data) {
     typeof task.title === "string" && task.title.trim() &&
     task.title.length <= 120 && typeof task.date === "string" &&
     typeof task.done === "boolean" &&
+    (task.dates === undefined || (
+      Array.isArray(task.dates) && task.dates.length > 0 &&
+      task.dates.every(date => typeof date === "string") &&
+      task.dates.includes(task.date)
+    )) &&
+    (task.completedDates === undefined || (
+      Array.isArray(task.completedDates) &&
+      task.completedDates.every(date =>
+        typeof date === "string" && (task.dates || [task.date]).includes(date)
+      )
+    )) &&
     characterIds.has(task.characterId) &&
     (task.category === undefined || typeof task.category === "string") &&
     (task.note === undefined || typeof task.note === "string")
