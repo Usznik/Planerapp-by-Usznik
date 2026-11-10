@@ -8,6 +8,7 @@ const defaultCharacter = { id: "dropszeusz", name: "Dropszeusz" };
 const emptyData = {
   version: 1,
   tasks: [],
+  dayFinances: [],
   characters: [defaultCharacter],
   selectedCharacterId: defaultCharacter.id
 };
@@ -34,6 +35,24 @@ function isValidData(data) {
   }
 
   if (!characterIds.has(data.selectedCharacterId)) return false;
+  if (data.dayFinances !== undefined) {
+    if (!Array.isArray(data.dayFinances) || data.dayFinances.length > 100000) return false;
+    const financeKeys = new Set();
+    for (const finance of data.dayFinances) {
+      if (
+        !finance || typeof finance.characterId !== "string" ||
+        !characterIds.has(finance.characterId) ||
+        typeof finance.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(finance.date) ||
+        !Number.isSafeInteger(finance.earned) || finance.earned < 0 ||
+        !Number.isSafeInteger(finance.spent) || finance.spent < 0
+      ) {
+        return false;
+      }
+      const key = `${finance.characterId}\u0000${finance.date}`;
+      if (financeKeys.has(key)) return false;
+      financeKeys.add(key);
+    }
+  }
   return data.tasks.every(task =>
     task && typeof task.id === "string" &&
     typeof task.title === "string" && task.title.trim() &&

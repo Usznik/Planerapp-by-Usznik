@@ -103,6 +103,25 @@
     .stat-value { color: var(--accent-bright); font-size: 19px; font-weight: 650; }
     .stat-icon { display: none; }
 
+    .finance-panel { margin-bottom: 14px; }
+    .finance-heading { padding-bottom: 12px; }
+    .finance-month { color: var(--accent-bright); font-size: 12px; text-transform: capitalize; }
+    .finance-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 20px 16px; border: 1px solid var(--line); border-radius: 4px; }
+    .finance-stat { min-width: 0; padding: 11px 13px; }
+    .finance-stat + .finance-stat { border-left: 1px solid var(--line); }
+    .finance-stat-label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 10px; }
+    .finance-stat-value { color: var(--text); font-size: 15px; font-weight: 650; overflow-wrap: anywhere; }
+    .finance-stat.income .finance-stat-value { color: var(--green); }
+    .finance-stat.expense .finance-stat-value { color: var(--red); }
+    .finance-stat.balance .finance-stat-value { color: var(--accent-bright); }
+    .finance-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; gap: 10px; padding: 0 20px 17px; }
+    .finance-form-heading { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0; color: var(--text); font-size: 12px; font-weight: 600; }
+    .finance-date { color: var(--muted); font-size: 11px; font-weight: 400; text-transform: capitalize; }
+    .finance-field { display: grid; gap: 6px; color: var(--muted); font-size: 11px; }
+    .finance-field .field { font-variant-numeric: tabular-nums; }
+    .finance-balance { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 11px; }
+    .finance-balance strong { color: var(--accent-bright); font-variant-numeric: tabular-nums; }
+
     .workspace { display: grid; grid-template-columns: minmax(300px, .82fr) minmax(0, 1.55fr); gap: 14px; align-items: start; }
     .panel { min-width: 0; overflow: hidden; }
     .panel, .stat-card, .characters-panel { background: var(--panel); }
@@ -236,6 +255,12 @@
       .stat-card > div { align-items: flex-start; flex-direction: column-reverse; gap: 3px; }
       .stat-label { font-size: 10px; }
       .stat-value { font-size: 17px; }
+      .finance-heading { flex-wrap: wrap; padding-bottom: 12px; }
+      .finance-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-right: 14px; margin-left: 14px; }
+      .finance-stat:nth-child(3) { border-left: 0; }
+      .finance-stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
+      .finance-form { grid-template-columns: 1fr 1fr; padding-right: 14px; padding-left: 14px; }
+      .finance-form .add-button { grid-column: 1 / -1; }
       .panel-heading { padding-right: 14px; padding-left: 14px; }
       .calendar { padding-right: 10px; padding-left: 10px; }
       .day { min-height: 43px; }
@@ -284,6 +309,30 @@
       <article class="stat-card"><div><span class="stat-label">Na dziś</span><strong class="stat-value" id="today-count">0</strong></div></article>
       <article class="stat-card"><div><span class="stat-label">Do zrobienia</span><strong class="stat-value" id="pending-count">0</strong></div></article>
       <article class="stat-card"><div><span class="stat-label">Ukończone</span><strong class="stat-value" id="done-count">0</strong></div></article>
+    </section>
+
+    <section class="panel finance-panel" aria-labelledby="finance-title">
+      <div class="panel-heading finance-heading">
+        <h2 id="finance-title">Portfel Yang</h2>
+        <span class="finance-month" id="finance-month"></span>
+      </div>
+      <div class="finance-summary" aria-label="Podsumowanie finansowe miesiąca">
+        <article class="finance-stat income"><span class="finance-stat-label">Zarobiono w miesiącu</span><strong class="finance-stat-value" id="month-earned">0 Yang</strong></article>
+        <article class="finance-stat expense"><span class="finance-stat-label">Wydano w miesiącu</span><strong class="finance-stat-value" id="month-spent">0 Yang</strong></article>
+        <article class="finance-stat balance"><span class="finance-stat-label">Bilans miesiąca</span><strong class="finance-stat-value" id="month-balance">0 Yang</strong></article>
+        <article class="finance-stat"><span class="finance-stat-label">Dni z wpisami</span><strong class="finance-stat-value" id="month-days">0</strong></article>
+      </div>
+      <form class="finance-form" id="finance-form">
+        <h3 class="finance-form-heading">Rozliczenie wybranego dnia <span class="finance-date" id="finance-date"></span></h3>
+        <label class="finance-field" for="finance-earned">Zarobiono (Yang)
+          <input class="field" id="finance-earned" type="number" min="0" step="1" inputmode="numeric" placeholder="0" aria-label="Zarobiono Yang wybranego dnia">
+        </label>
+        <label class="finance-field" for="finance-spent">Wydano (Yang)
+          <input class="field" id="finance-spent" type="number" min="0" step="1" inputmode="numeric" placeholder="0" aria-label="Wydano Yang wybranego dnia">
+        </label>
+        <button class="add-button" type="submit">Zapisz dzień</button>
+        <p class="finance-balance">Bilans dnia: <strong id="day-balance">0 Yang</strong></p>
+      </form>
     </section>
 
     <div class="workspace">
@@ -364,6 +413,7 @@
       const STORAGE_KEY = "metin-planner-tasks-v1";
       const CHARACTERS_KEY = "metin-planner-characters-v1";
       const DAY_NOTES_KEY = "metin-planner-day-notes-v1";
+      const DAY_FINANCES_KEY = "metin-planner-day-finances-v1";
       const SELECTED_CHARACTER_KEY = "metin-planner-selected-character-v1";
       const HANDLE_DB_NAME = "metin-planner-files";
       const HANDLE_STORE_NAME = "handles";
@@ -383,6 +433,7 @@
       let selectedCharacterId;
       let tasks;
       let dayNotes;
+      let dayFinances;
       let selectedTaskDates = [todayKey];
       const dayNoteDrafts = new Map();
 
@@ -394,6 +445,16 @@
         calendarDays: document.querySelector("#calendar-days"),
         monthLabel: document.querySelector("#month-label"),
         selectedDate: document.querySelector("#selected-date"),
+        financeForm: document.querySelector("#finance-form"),
+        financeEarned: document.querySelector("#finance-earned"),
+        financeSpent: document.querySelector("#finance-spent"),
+        financeDate: document.querySelector("#finance-date"),
+        dayBalance: document.querySelector("#day-balance"),
+        financeMonth: document.querySelector("#finance-month"),
+        monthEarned: document.querySelector("#month-earned"),
+        monthSpent: document.querySelector("#month-spent"),
+        monthBalance: document.querySelector("#month-balance"),
+        monthDays: document.querySelector("#month-days"),
         taskForm: document.querySelector("#task-form"),
         taskDateDialog: document.querySelector("#task-date-dialog"),
         taskDateRangeForm: document.querySelector("#task-date-range-form"),
@@ -426,6 +487,7 @@
         let legacyCharacters = [{ ...DEFAULT_CHARACTER }];
         let legacyTasks = [];
         let legacyDayNotes = [];
+        let legacyDayFinances = [];
         let legacySelectedCharacterId = DEFAULT_CHARACTER.id;
         try {
           const stored = localStorage.getItem(CHARACTERS_KEY);
@@ -467,6 +529,14 @@
               typeof note.date === "string" && typeof note.text === "string"
             );
           }
+          const storedDayFinances = localStorage.getItem(DAY_FINANCES_KEY);
+          if (storedDayFinances) {
+            const parsedDayFinances = JSON.parse(storedDayFinances);
+            if (!isValidDayFinances(parsedDayFinances, legacyCharacters)) {
+              throw new Error("Nieprawidłowy format zapisanych rozliczeń Yang.");
+            }
+            legacyDayFinances = parsedDayFinances;
+          }
         } catch (error) {
           showNotice(`Nie udało się odczytać części starych danych z przeglądarki: ${error.message}`);
         }
@@ -474,9 +544,32 @@
           version: 1,
           tasks: legacyTasks,
           dayNotes: legacyDayNotes,
+          dayFinances: legacyDayFinances,
           characters: legacyCharacters,
           selectedCharacterId: legacySelectedCharacterId
         };
+      }
+
+      function isValidDayFinances(finances, validCharacters) {
+        if (finances === undefined) return true;
+        if (!Array.isArray(finances) || finances.length > 100000) return false;
+        const characterIds = new Set(validCharacters.map(character => character.id));
+        const financeKeys = new Set();
+        for (const finance of finances) {
+          if (
+            !finance || typeof finance.characterId !== "string" ||
+            !characterIds.has(finance.characterId) ||
+            typeof finance.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(finance.date) ||
+            !Number.isSafeInteger(finance.earned) || finance.earned < 0 ||
+            !Number.isSafeInteger(finance.spent) || finance.spent < 0
+          ) {
+            return false;
+          }
+          const key = `${finance.characterId}\u0000${finance.date}`;
+          if (financeKeys.has(key)) return false;
+          financeKeys.add(key);
+        }
+        return true;
       }
 
       function isValidData(data) {
@@ -496,6 +589,7 @@
               data.characters.some(character => character.id === note.characterId)
             )
           )) &&
+          isValidDayFinances(data.dayFinances, data.characters) &&
           data.tasks.every(task =>
             task && typeof task.id === "string" &&
             typeof task.title === "string" &&
@@ -530,6 +624,7 @@
           };
         });
         dayNotes = data.dayNotes || [];
+        dayFinances = data.dayFinances || [];
       }
 
       function openHandleDatabase() {
@@ -585,6 +680,7 @@
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot.tasks));
           localStorage.setItem(DAY_NOTES_KEY, JSON.stringify(snapshot.dayNotes));
+          localStorage.setItem(DAY_FINANCES_KEY, JSON.stringify(snapshot.dayFinances));
           localStorage.setItem(CHARACTERS_KEY, JSON.stringify(snapshot.characters));
           localStorage.setItem(SELECTED_CHARACTER_KEY, snapshot.selectedCharacterId);
           return true;
@@ -596,7 +692,7 @@
 
       function saveData() {
         const generation = ++saveGeneration;
-        const snapshot = { version: 1, tasks, dayNotes, characters, selectedCharacterId };
+        const snapshot = { version: 1, tasks, dayNotes, dayFinances, characters, selectedCharacterId };
         const serializedSnapshot = JSON.stringify(snapshot);
         const handle = fileHandle;
         elements.storageLabel.textContent = isDesktopApp || handle ? "Zapisywanie pliku JSON…" : "Zapisywanie w przeglądarce…";
@@ -700,7 +796,7 @@
           await saveQueue;
           const selectedData = await readJsonFile(handle);
           if (selectedData) {
-            const hasCurrentData = tasks.length > 0 || dayNotes.length > 0 || characters.length > 1;
+            const hasCurrentData = tasks.length > 0 || dayNotes.length > 0 || dayFinances.length > 0 || characters.length > 1;
             if (hasCurrentData && !window.confirm(`Wczytać dane z pliku „${handle.name}” zamiast aktualnie wyświetlanych?`)) return;
             applyData(selectedData);
           }
@@ -762,6 +858,30 @@
 
       function dayNoteFor(date, characterId = selectedCharacterId) {
         return dayNotes.find(note => note.characterId === characterId && note.date === date)?.text || "";
+      }
+
+      function financeForDate(date, characterId = selectedCharacterId) {
+        return dayFinances.find(finance => finance.characterId === characterId && finance.date === date);
+      }
+
+      function formatYang(amount) {
+        return `${new Intl.NumberFormat("pl-PL").format(amount)} Yang`;
+      }
+
+      function readYangInput(input) {
+        const value = input.value.trim();
+        if (!value) return 0;
+        if (!/^\d+$/.test(value)) return null;
+        const amount = Number(value);
+        return Number.isSafeInteger(amount) ? amount : null;
+      }
+
+      function updateDayBalance() {
+        const earned = readYangInput(elements.financeEarned);
+        const spent = readYangInput(elements.financeSpent);
+        elements.dayBalance.textContent = earned === null || spent === null
+          ? "Wpisz pełne liczby"
+          : formatYang(BigInt(earned) - BigInt(spent));
       }
 
       function dayNoteKey(date, characterId = selectedCharacterId) {
@@ -857,12 +977,36 @@
         document.querySelector("#done-count").textContent = taskOccurrences.filter(({ task, date }) => isTaskDoneOnDate(task, date)).length;
       }
 
+      function renderFinance() {
+        const monthKey = `${shownMonth.getFullYear()}-${String(shownMonth.getMonth() + 1).padStart(2, "0")}`;
+        const monthLabel = new Intl.DateTimeFormat("pl-PL", { month: "long", year: "numeric" }).format(shownMonth);
+        const monthEntries = dayFinances.filter(finance =>
+          finance.characterId === selectedCharacterId && finance.date.startsWith(`${monthKey}-`)
+        );
+        const monthEarned = monthEntries.reduce((total, finance) => total + BigInt(finance.earned), 0n);
+        const monthSpent = monthEntries.reduce((total, finance) => total + BigInt(finance.spent), 0n);
+        const dayFinance = financeForDate(selectedDate);
+        const earned = dayFinance?.earned || 0;
+        const spent = dayFinance?.spent || 0;
+        elements.financeMonth.textContent = monthLabel;
+        elements.monthEarned.textContent = formatYang(monthEarned);
+        elements.monthSpent.textContent = formatYang(monthSpent);
+        elements.monthBalance.textContent = formatYang(monthEarned - monthSpent);
+        elements.monthDays.textContent = monthEntries.length;
+        elements.financeDate.textContent = new Intl.DateTimeFormat("pl-PL", { dateStyle: "full" })
+          .format(new Date(`${selectedDate}T12:00:00`));
+        elements.financeEarned.value = dayFinance ? String(earned) : "";
+        elements.financeSpent.value = dayFinance ? String(spent) : "";
+        updateDayBalance();
+      }
+
       function render() {
         renderCharacters();
         renderCalendar();
         renderTaskDates();
         renderTasks();
         renderStats();
+        renderFinance();
       }
 
       function resetForm() {
@@ -878,10 +1022,12 @@
       document.querySelector("#prev-month").addEventListener("click", () => {
         shownMonth = new Date(shownMonth.getFullYear(), shownMonth.getMonth() - 1, 1);
         renderCalendar();
+        renderFinance();
       });
       document.querySelector("#next-month").addEventListener("click", () => {
         shownMonth = new Date(shownMonth.getFullYear(), shownMonth.getMonth() + 1, 1);
         renderCalendar();
+        renderFinance();
       });
       document.querySelector("#go-today").addEventListener("click", () => {
         selectedDate = todayKey;
@@ -892,6 +1038,34 @@
           renderTaskDates();
         }
         render();
+      });
+
+      elements.financeEarned.addEventListener("input", updateDayBalance);
+      elements.financeSpent.addEventListener("input", updateDayBalance);
+      elements.financeForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const earned = readYangInput(elements.financeEarned);
+        const spent = readYangInput(elements.financeSpent);
+        if (
+          !elements.financeEarned.validity.valid || !elements.financeSpent.validity.valid ||
+          earned === null || spent === null
+        ) {
+          showNotice("Wpisz zarobek i wydatki jako nieujemne liczby całkowite Yang.");
+          (earned === null || !elements.financeEarned.validity.valid
+            ? elements.financeEarned
+            : elements.financeSpent).focus();
+          return;
+        }
+        const existing = financeForDate(selectedDate);
+        if (earned === 0 && spent === 0) {
+          if (existing) dayFinances = dayFinances.filter(finance => finance !== existing);
+        } else if (existing) {
+          Object.assign(existing, { earned, spent });
+        } else {
+          dayFinances.push({ characterId: selectedCharacterId, date: selectedDate, earned, spent });
+        }
+        saveData();
+        renderFinance();
       });
 
       elements.characterTabs.addEventListener("click", event => {
