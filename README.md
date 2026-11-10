@@ -25,7 +25,6 @@ Można nadal otwierać `index.html` bezpośrednio w Chrome lub Edge. W przegląd
 
 
 ## Do zrobienia
--ile zarobiłeś danego dnia
 -metiny bossy mini bosy okienko
 -ksiazki , biolog katergoia i pole do zazneczani czy weszło i jak nie wejdzie to przesuwa zadanie jeden dzien do przodu w kalendarzu.
 -Do zrobienia world boss i mozliwosc zacznenia co ile ma się zadanie (poniedzaiłe,sroda,niedziela,poniedziałek)
