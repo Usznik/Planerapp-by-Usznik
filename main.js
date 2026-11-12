@@ -9,6 +9,7 @@ const emptyData = {
   version: 1,
   tasks: [],
   dayFinances: [],
+  huntCounts: [],
   characters: [defaultCharacter],
   selectedCharacterId: defaultCharacter.id
 };
@@ -53,6 +54,25 @@ function isValidData(data) {
       financeKeys.add(key);
     }
   }
+  if (data.huntCounts !== undefined) {
+    if (!Array.isArray(data.huntCounts) || data.huntCounts.length > 100000) return false;
+    const countKeys = new Set();
+    for (const count of data.huntCounts) {
+      if (
+        !count || typeof count.characterId !== "string" ||
+        !characterIds.has(count.characterId) ||
+        typeof count.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(count.date) ||
+        !Number.isSafeInteger(count.metins) || count.metins < 0 ||
+        !Number.isSafeInteger(count.bosses) || count.bosses < 0 ||
+        !Number.isSafeInteger(count.miniBosses) || count.miniBosses < 0
+      ) {
+        return false;
+      }
+      const key = `${count.characterId}\u0000${count.date}`;
+      if (countKeys.has(key)) return false;
+      countKeys.add(key);
+    }
+  }
   return data.tasks.every(task =>
     task && typeof task.id === "string" &&
     typeof task.title === "string" && task.title.trim() &&
@@ -67,6 +87,14 @@ function isValidData(data) {
       Array.isArray(task.completedDates) &&
       task.completedDates.every(date =>
         typeof date === "string" && (task.dates || [task.date]).includes(date)
+      )
+    )) &&
+    (task.completedAtByDate === undefined || (
+      task.completedAtByDate && typeof task.completedAtByDate === "object" &&
+      !Array.isArray(task.completedAtByDate) &&
+      Object.entries(task.completedAtByDate).every(([date, timestamp]) =>
+        (task.dates || [task.date]).includes(date) &&
+        typeof timestamp === "string" && !Number.isNaN(Date.parse(timestamp))
       )
     )) &&
     characterIds.has(task.characterId) &&

@@ -122,6 +122,20 @@
     .finance-balance { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 11px; }
     .finance-balance strong { color: var(--accent-bright); font-variant-numeric: tabular-nums; }
 
+    .hunt-panel { margin-bottom: 14px; }
+    .hunt-heading { padding-bottom: 12px; }
+    .hunt-period { color: var(--muted); font-size: 11px; text-align: right; text-transform: capitalize; }
+    .hunt-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 20px 16px; border: 1px solid var(--line); border-radius: 4px; }
+    .hunt-stat { min-width: 0; padding: 12px 14px; }
+    .hunt-stat + .hunt-stat { border-left: 1px solid var(--line); }
+    .hunt-stat-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .hunt-stat-label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 11px; }
+    .hunt-day-total { color: var(--text); font-size: 21px; font-variant-numeric: tabular-nums; }
+    .hunt-month-total { margin: 7px 0 0; color: var(--muted); font-size: 10px; }
+    .hunt-month-total strong { color: var(--accent-bright); font-variant-numeric: tabular-nums; }
+    .hunt-add-button { flex: 0 0 auto; padding: 7px 9px; border: 1px solid var(--line); border-radius: 4px; color: var(--accent-bright); background: var(--panel-soft); cursor: pointer; font-size: 11px; }
+    .hunt-add-button:hover { border-color: #5b604f; color: var(--text); }
+
     .workspace { display: grid; grid-template-columns: minmax(300px, .82fr) minmax(0, 1.55fr); gap: 14px; align-items: start; }
     .panel { min-width: 0; overflow: hidden; }
     .panel, .stat-card, .characters-panel { background: var(--panel); }
@@ -193,6 +207,9 @@
     .date-range-copy { margin: 0 0 18px; color: var(--muted); font-size: 12px; }
     .date-range-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .date-range-field { display: grid; gap: 6px; color: var(--muted); font-size: 11px; }
+    .weekday-options { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; padding: 0; border: 0; }
+    .weekday-choice { display: inline-flex; min-height: 36px; align-items: center; gap: 6px; padding: 0 9px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: #191713; cursor: pointer; font-size: 11px; }
+    .weekday-choice input { margin: 0; accent-color: var(--accent); }
     .date-range-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
     .cancel-edit { display: none; padding: 7px 9px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 11px; white-space: nowrap; }
     .cancel-edit.visible { display: inline-block; }
@@ -213,6 +230,8 @@
     .task-check { width: 16px; height: 16px; accent-color: var(--green); vertical-align: middle; cursor: pointer; }
     .task-title { display: block; max-width: 320px; overflow-wrap: anywhere; font-weight: 600; }
     .task-note { display: block; max-width: 320px; margin-top: 4px; overflow-wrap: anywhere; color: #b0a792; font-size: 11px; }
+    .completion-time-cell { width: 132px; }
+    .task-completion-time { display: block; color: var(--text); font-size: 14px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
     tr.is-done .task-title { color: #aaa18e; text-decoration: line-through; }
     .category { display: inline-block; padding: 5px 7px; border-radius: 6px; color: #cbb77f; background: #302a1d; font-size: 10px; white-space: nowrap; }
     .category.boss { color: #c89b85; background: #30241f; }
@@ -261,6 +280,10 @@
       .finance-stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
       .finance-form { grid-template-columns: 1fr 1fr; padding-right: 14px; padding-left: 14px; }
       .finance-form .add-button { grid-column: 1 / -1; }
+      .hunt-heading { flex-wrap: wrap; padding-bottom: 12px; }
+      .hunt-period { text-align: left; }
+      .hunt-summary { grid-template-columns: 1fr; margin-right: 14px; margin-left: 14px; }
+      .hunt-stat + .hunt-stat { border-top: 1px solid var(--line); border-left: 0; }
       .panel-heading { padding-right: 14px; padding-left: 14px; }
       .calendar { padding-right: 10px; padding-left: 10px; }
       .day { min-height: 43px; }
@@ -306,9 +329,9 @@
     </section>
 
     <section class="stats" aria-label="Podsumowanie zadań">
-      <article class="stat-card"><div><span class="stat-label">Na dziś</span><strong class="stat-value" id="today-count">0</strong></div></article>
-      <article class="stat-card"><div><span class="stat-label">Do zrobienia</span><strong class="stat-value" id="pending-count">0</strong></div></article>
-      <article class="stat-card"><div><span class="stat-label">Ukończone</span><strong class="stat-value" id="done-count">0</strong></div></article>
+      <article class="stat-card"><div><span class="stat-label">Do zrobienia na dziś</span><strong class="stat-value" id="today-count">0</strong></div></article>
+      <article class="stat-card"><div><span class="stat-label">Ukończone na dziś</span><strong class="stat-value" id="done-count">0</strong></div></article>
+      <article class="stat-card"><div><span class="stat-label">Razem na dziś</span><strong class="stat-value" id="total-count">0</strong></div></article>
     </section>
 
     <section class="panel finance-panel" aria-labelledby="finance-title">
@@ -333,6 +356,36 @@
         <button class="add-button" type="submit">Zapisz dzień</button>
         <p class="finance-balance">Bilans dnia: <strong id="day-balance">0 Yang</strong></p>
       </form>
+    </section>
+
+    <section class="panel hunt-panel" aria-labelledby="hunt-title">
+      <div class="panel-heading hunt-heading">
+        <h2 id="hunt-title">Zliczanie polowań</h2>
+        <span class="hunt-period" id="hunt-period"></span>
+      </div>
+      <div class="hunt-summary" id="hunt-summary">
+        <article class="hunt-stat">
+          <div class="hunt-stat-top">
+            <div><span class="hunt-stat-label">Metiny · wybrany dzień</span><strong class="hunt-day-total" id="hunt-metins-day">0</strong></div>
+            <button class="hunt-add-button" type="button" data-hunt-type="metins" aria-label="Dodaj metina">+1 Metin</button>
+          </div>
+          <p class="hunt-month-total">W miesiącu: <strong id="hunt-metins-month">0</strong></p>
+        </article>
+        <article class="hunt-stat">
+          <div class="hunt-stat-top">
+            <div><span class="hunt-stat-label">Bossy · wybrany dzień</span><strong class="hunt-day-total" id="hunt-bosses-day">0</strong></div>
+            <button class="hunt-add-button" type="button" data-hunt-type="bosses" aria-label="Dodaj bossa">+1 Boss</button>
+          </div>
+          <p class="hunt-month-total">W miesiącu: <strong id="hunt-bosses-month">0</strong></p>
+        </article>
+        <article class="hunt-stat">
+          <div class="hunt-stat-top">
+            <div><span class="hunt-stat-label">Minibossy · wybrany dzień</span><strong class="hunt-day-total" id="hunt-mini-bosses-day">0</strong></div>
+            <button class="hunt-add-button" type="button" data-hunt-type="miniBosses" aria-label="Dodaj minibossa">+1 Miniboss</button>
+          </div>
+          <p class="hunt-month-total">W miesiącu: <strong id="hunt-mini-bosses-month">0</strong></p>
+        </article>
+      </div>
     </section>
 
     <div class="workspace">
@@ -371,6 +424,7 @@
           </select>
           <input class="field" id="task-date" name="date" type="date" required aria-label="Data do przypisania do zadania">
           <button class="secondary-button" id="add-task-date" type="button">Dodaj zakres</button>
+          <button class="secondary-button" id="add-task-pattern" type="button">Ustaw cykl</button>
           <button class="add-button" id="submit-task" type="submit">＋ Dodaj</button>
           <div class="form-extra">
             <input class="field" id="task-note" name="note" maxlength="240" placeholder="Notatka (opcjonalnie)" aria-label="Notatka do zadania">
@@ -405,6 +459,29 @@
       </div>
     </form>
   </dialog>
+  <dialog class="date-range-dialog" id="task-pattern-dialog" aria-labelledby="task-pattern-dialog-title">
+    <form id="task-pattern-form">
+      <h2 id="task-pattern-dialog-title">Ustaw cykl tygodniowy</h2>
+      <p class="date-range-copy">Zadanie pojawi się w wybrane dni tygodnia, tylko w podanym zakresie dat.</p>
+      <div class="date-range-fields">
+        <label class="date-range-field">Od<input class="field" id="task-pattern-from" type="date" required></label>
+        <label class="date-range-field">Do<input class="field" id="task-pattern-to" type="date" required></label>
+      </div>
+      <fieldset class="weekday-options" aria-label="Dni tygodnia">
+        <label class="weekday-choice"><input type="checkbox" name="weekday" value="0">Pn</label>
+        <label class="weekday-choice"><input type="checkbox" name="weekday" value="1">Wt</label>
+        <label class="weekday-choice"><input type="checkbox" name="weekday" value="2">Śr</label>
+        <label class="weekday-choice"><input type="checkbox" name="weekday" value="3">Cz</label>
+        <label class="weekday-choice"><input type="checkbox" name="weekday" value="4">Pt</label>
+        <label class="weekday-choice"><input type="checkbox" name="weekday" value="5">So</label>
+        <label class="weekday-choice"><input type="checkbox" name="weekday" value="6">Nd</label>
+      </fieldset>
+      <div class="date-range-actions">
+        <button class="secondary-button" id="cancel-task-pattern" type="button">Anuluj</button>
+        <button class="add-button" type="submit">Dodaj dni cyklu</button>
+      </div>
+    </form>
+  </dialog>
   <div class="notice" id="notice" role="alert" hidden></div>
 
   <script>
@@ -414,6 +491,8 @@
       const CHARACTERS_KEY = "metin-planner-characters-v1";
       const DAY_NOTES_KEY = "metin-planner-day-notes-v1";
       const DAY_FINANCES_KEY = "metin-planner-day-finances-v1";
+      const HUNT_COUNTS_KEY = "metin-planner-hunt-counts-v1";
+      const HUNT_COUNT_TYPES = ["metins", "bosses", "miniBosses"];
       const SELECTED_CHARACTER_KEY = "metin-planner-selected-character-v1";
       const HANDLE_DB_NAME = "metin-planner-files";
       const HANDLE_STORE_NAME = "handles";
@@ -434,6 +513,7 @@
       let tasks;
       let dayNotes;
       let dayFinances;
+      let huntCounts;
       let selectedTaskDates = [todayKey];
       const dayNoteDrafts = new Map();
 
@@ -448,6 +528,8 @@
         financeForm: document.querySelector("#finance-form"),
         financeEarned: document.querySelector("#finance-earned"),
         financeSpent: document.querySelector("#finance-spent"),
+        huntSummary: document.querySelector("#hunt-summary"),
+        huntPeriod: document.querySelector("#hunt-period"),
         financeDate: document.querySelector("#finance-date"),
         dayBalance: document.querySelector("#day-balance"),
         financeMonth: document.querySelector("#finance-month"),
@@ -460,6 +542,11 @@
         taskDateRangeForm: document.querySelector("#task-date-range-form"),
         taskDateFrom: document.querySelector("#task-date-from"),
         taskDateTo: document.querySelector("#task-date-to"),
+        taskPatternDialog: document.querySelector("#task-pattern-dialog"),
+        taskPatternForm: document.querySelector("#task-pattern-form"),
+        taskPatternFrom: document.querySelector("#task-pattern-from"),
+        taskPatternTo: document.querySelector("#task-pattern-to"),
+        addTaskPattern: document.querySelector("#add-task-pattern"),
         dayNoteForm: document.querySelector("#day-note-form"),
         dayNote: document.querySelector("#day-note"),
         title: document.querySelector("#task-title"),
@@ -488,6 +575,7 @@
         let legacyTasks = [];
         let legacyDayNotes = [];
         let legacyDayFinances = [];
+        let legacyHuntCounts = [];
         let legacySelectedCharacterId = DEFAULT_CHARACTER.id;
         try {
           const stored = localStorage.getItem(CHARACTERS_KEY);
@@ -537,6 +625,14 @@
             }
             legacyDayFinances = parsedDayFinances;
           }
+          const storedHuntCounts = localStorage.getItem(HUNT_COUNTS_KEY);
+          if (storedHuntCounts) {
+            const parsedHuntCounts = JSON.parse(storedHuntCounts);
+            if (!isValidHuntCounts(parsedHuntCounts, legacyCharacters)) {
+              throw new Error("Nieprawidłowy format zapisanych zliczeń polowań.");
+            }
+            legacyHuntCounts = parsedHuntCounts;
+          }
         } catch (error) {
           showNotice(`Nie udało się odczytać części starych danych z przeglądarki: ${error.message}`);
         }
@@ -545,6 +641,7 @@
           tasks: legacyTasks,
           dayNotes: legacyDayNotes,
           dayFinances: legacyDayFinances,
+          huntCounts: legacyHuntCounts,
           characters: legacyCharacters,
           selectedCharacterId: legacySelectedCharacterId
         };
@@ -572,6 +669,27 @@
         return true;
       }
 
+      function isValidHuntCounts(counts, validCharacters) {
+        if (counts === undefined) return true;
+        if (!Array.isArray(counts) || counts.length > 100000) return false;
+        const characterIds = new Set(validCharacters.map(character => character.id));
+        const countKeys = new Set();
+        for (const count of counts) {
+          if (
+            !count || typeof count.characterId !== "string" ||
+            !characterIds.has(count.characterId) ||
+            typeof count.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(count.date) ||
+            !HUNT_COUNT_TYPES.every(type => Number.isSafeInteger(count[type]) && count[type] >= 0)
+          ) {
+            return false;
+          }
+          const key = `${count.characterId}\u0000${count.date}`;
+          if (countKeys.has(key)) return false;
+          countKeys.add(key);
+        }
+        return true;
+      }
+
       function isValidData(data) {
         return data && data.version === 1 &&
           Array.isArray(data.tasks) && Array.isArray(data.characters) &&
@@ -590,6 +708,7 @@
             )
           )) &&
           isValidDayFinances(data.dayFinances, data.characters) &&
+          isValidHuntCounts(data.huntCounts, data.characters) &&
           data.tasks.every(task =>
             task && typeof task.id === "string" &&
             typeof task.title === "string" &&
@@ -603,6 +722,14 @@
             (task.completedDates === undefined || (
               Array.isArray(task.completedDates) &&
               task.completedDates.every(date => typeof date === "string" && datesForTask(task).includes(date))
+            )) &&
+            (task.completedAtByDate === undefined || (
+              task.completedAtByDate && typeof task.completedAtByDate === "object" &&
+              !Array.isArray(task.completedAtByDate) &&
+              Object.entries(task.completedAtByDate).every(([date, timestamp]) =>
+                datesForTask(task).includes(date) &&
+                typeof timestamp === "string" && !Number.isNaN(Date.parse(timestamp))
+              )
             )) &&
             data.characters.some(character => character.id === task.characterId)
           );
@@ -625,6 +752,7 @@
         });
         dayNotes = data.dayNotes || [];
         dayFinances = data.dayFinances || [];
+        huntCounts = data.huntCounts || [];
       }
 
       function openHandleDatabase() {
@@ -681,6 +809,7 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot.tasks));
           localStorage.setItem(DAY_NOTES_KEY, JSON.stringify(snapshot.dayNotes));
           localStorage.setItem(DAY_FINANCES_KEY, JSON.stringify(snapshot.dayFinances));
+          localStorage.setItem(HUNT_COUNTS_KEY, JSON.stringify(snapshot.huntCounts));
           localStorage.setItem(CHARACTERS_KEY, JSON.stringify(snapshot.characters));
           localStorage.setItem(SELECTED_CHARACTER_KEY, snapshot.selectedCharacterId);
           return true;
@@ -692,7 +821,7 @@
 
       function saveData() {
         const generation = ++saveGeneration;
-        const snapshot = { version: 1, tasks, dayNotes, dayFinances, characters, selectedCharacterId };
+        const snapshot = { version: 1, tasks, dayNotes, dayFinances, huntCounts, characters, selectedCharacterId };
         const serializedSnapshot = JSON.stringify(snapshot);
         const handle = fileHandle;
         elements.storageLabel.textContent = isDesktopApp || handle ? "Zapisywanie pliku JSON…" : "Zapisywanie w przeglądarce…";
@@ -796,7 +925,7 @@
           await saveQueue;
           const selectedData = await readJsonFile(handle);
           if (selectedData) {
-            const hasCurrentData = tasks.length > 0 || dayNotes.length > 0 || dayFinances.length > 0 || characters.length > 1;
+            const hasCurrentData = tasks.length > 0 || dayNotes.length > 0 || dayFinances.length > 0 || huntCounts.length > 0 || characters.length > 1;
             if (hasCurrentData && !window.confirm(`Wczytać dane z pliku „${handle.name}” zamiast aktualnie wyświetlanych?`)) return;
             applyData(selectedData);
           }
@@ -852,8 +981,22 @@
           : task.done ? [task.date] : [];
       }
 
+      function completionTimesForTask(task, dates = datesForTask(task)) {
+        return task.completedAtByDate && typeof task.completedAtByDate === "object"
+          ? Object.fromEntries(Object.entries(task.completedAtByDate).filter(([date]) => dates.includes(date)))
+          : {};
+      }
+
       function isTaskDoneOnDate(task, date) {
         return datesForTask(task).includes(date) && completedDatesForTask(task).includes(date);
+      }
+
+      function pendingTaskCount(characterTasks, date) {
+        return characterTasks.reduce((count, task) =>
+          count + datesForTask(task).filter(taskDate =>
+            (date === undefined || taskDate === date) && !isTaskDoneOnDate(task, taskDate)
+          ).length, 0
+        );
       }
 
       function dayNoteFor(date, characterId = selectedCharacterId) {
@@ -897,9 +1040,9 @@
 
       function renderCharacters() {
         elements.characterTabs.innerHTML = characters.map(character => {
-          const count = tasks.filter(task => task.characterId === character.id).length;
+          const count = pendingTaskCount(tasks.filter(task => task.characterId === character.id));
           return `<button class="character-tab${character.id === selectedCharacterId ? " active" : ""}" type="button" role="tab" data-character-id="${escapeHTML(character.id)}" aria-selected="${character.id === selectedCharacterId}">
-            <span>${escapeHTML(character.name)}</span><span class="character-task-count">${count}</span>
+            <span>${escapeHTML(character.name)}</span><span class="character-task-count" title="${count} do zrobienia">${count}</span>
           </button>`;
         }).join("");
       }
@@ -943,7 +1086,7 @@
             ? isTaskDoneOnDate(task, selectedDate)
             : !isTaskDoneOnDate(task, selectedDate))
         );
-        elements.taskCount.textContent = `${dayTasks.length} ${dayTasks.length === 1 ? "zadanie" : dayTasks.length >= 2 && dayTasks.length <= 4 ? "zadania" : "zadań"}`;
+        elements.taskCount.textContent = `${pendingTaskCount(tasksForCharacter(), selectedDate)} do zrobienia`;
 
         if (visibleTasks.length === 0) {
           const isFiltered = dayTasks.length > 0;
@@ -955,26 +1098,53 @@
           const category = escapeHTML(task.category || "Inne");
           const categoryClass = category === "Boss" ? "boss" : category === "PvP" ? "pvp" : category === "Handel" ? "market" : "";
           const isDone = isTaskDoneOnDate(task, selectedDate);
+          const completedAt = isDone ? completionTimesForTask(task)[selectedDate] : null;
+          const completionTime = completedAt
+            ? `<span class="task-completion-time">${escapeHTML(new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit" }).format(new Date(completedAt)))}</span>`
+            : "";
           const deleteLabel = datesForTask(task).length > 1 ? "Usuń z dnia" : "Usuń";
           return `<tr class="${isDone ? "is-done" : ""}">
             <td class="check-cell"><input class="task-check" type="checkbox" data-action="toggle" data-id="${escapeHTML(task.id)}" ${isDone ? "checked" : ""} aria-label="Oznacz jako ${isDone ? "niewykonane" : "wykonane"}: ${escapeHTML(task.title)}"></td>
             <td><span class="task-title">${escapeHTML(task.title)}</span>${task.note ? `<span class="task-note">${escapeHTML(task.note)}</span>` : ""}</td>
+            <td class="completion-time-cell">${completionTime || "—"}</td>
             <td><span class="category ${categoryClass}">${category}</span></td>
             <td><div class="row-actions"><button class="row-button" type="button" data-action="edit" data-id="${escapeHTML(task.id)}">Edytuj</button><button class="row-button delete" type="button" data-action="delete" data-id="${escapeHTML(task.id)}" aria-label="${deleteLabel} zadanie ${escapeHTML(task.title)}${datesForTask(task).length > 1 ? ` tylko z ${escapeHTML(new Intl.DateTimeFormat("pl-PL", { dateStyle: "long" }).format(new Date(`${selectedDate}T12:00:00`)))}` : ""}">${deleteLabel}</button></div></td>
           </tr>`;
         }).join("");
-        elements.taskContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="check-cell">✓</th><th>Zadanie</th><th>Kategoria</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+        elements.taskContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="check-cell">✓</th><th>Zadanie</th><th class="completion-time-cell">Godzina</th><th>Kategoria</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
       }
 
       function renderStats() {
         const characterTasks = tasksForCharacter();
-        const todayTasks = characterTasks.filter(task => datesForTask(task).includes(todayKey));
-        document.querySelector("#today-count").textContent = todayTasks.length;
-        const taskOccurrences = characterTasks.flatMap(task =>
+        const todayOccurrences = characterTasks.flatMap(task =>
           datesForTask(task).map(date => ({ task, date }))
+        ).filter(({ date }) => date === todayKey);
+        const pendingToday = todayOccurrences.filter(({ task, date }) => !isTaskDoneOnDate(task, date)).length;
+        document.querySelector("#today-count").textContent = pendingToday;
+        document.querySelector("#done-count").textContent =
+          todayOccurrences.filter(({ task, date }) => isTaskDoneOnDate(task, date)).length;
+        document.querySelector("#total-count").textContent = todayOccurrences.length;
+      }
+
+      function renderHuntCounts() {
+        const monthKey = `${shownMonth.getFullYear()}-${String(shownMonth.getMonth() + 1).padStart(2, "0")}`;
+        const dayCount = huntCounts.find(count =>
+          count.characterId === selectedCharacterId && count.date === selectedDate
         );
-        document.querySelector("#pending-count").textContent = taskOccurrences.filter(({ task, date }) => !isTaskDoneOnDate(task, date)).length;
-        document.querySelector("#done-count").textContent = taskOccurrences.filter(({ task, date }) => isTaskDoneOnDate(task, date)).length;
+        const monthCounts = huntCounts.filter(count =>
+          count.characterId === selectedCharacterId && count.date.startsWith(`${monthKey}-`)
+        );
+        const monthLabel = new Intl.DateTimeFormat("pl-PL", { month: "long", year: "numeric" }).format(shownMonth);
+        const dateLabel = new Intl.DateTimeFormat("pl-PL", { dateStyle: "medium" })
+          .format(new Date(`${selectedDate}T12:00:00`));
+        elements.huntPeriod.textContent = `${dateLabel} · ${monthLabel}`;
+        const typeIds = { metins: "metins", bosses: "bosses", miniBosses: "mini-bosses" };
+        for (const type of HUNT_COUNT_TYPES) {
+          document.querySelector(`#hunt-${typeIds[type]}-day`).textContent = dayCount?.[type] || 0;
+          const monthTotal = monthCounts.reduce((total, count) => total + BigInt(count[type]), 0n);
+          document.querySelector(`#hunt-${typeIds[type]}-month`).textContent =
+            new Intl.NumberFormat("pl-PL").format(monthTotal);
+        }
       }
 
       function renderFinance() {
@@ -1007,6 +1177,7 @@
         renderTasks();
         renderStats();
         renderFinance();
+        renderHuntCounts();
       }
 
       function resetForm() {
@@ -1023,11 +1194,13 @@
         shownMonth = new Date(shownMonth.getFullYear(), shownMonth.getMonth() - 1, 1);
         renderCalendar();
         renderFinance();
+        renderHuntCounts();
       });
       document.querySelector("#next-month").addEventListener("click", () => {
         shownMonth = new Date(shownMonth.getFullYear(), shownMonth.getMonth() + 1, 1);
         renderCalendar();
         renderFinance();
+        renderHuntCounts();
       });
       document.querySelector("#go-today").addEventListener("click", () => {
         selectedDate = todayKey;
@@ -1042,6 +1215,31 @@
 
       elements.financeEarned.addEventListener("input", updateDayBalance);
       elements.financeSpent.addEventListener("input", updateDayBalance);
+      elements.huntSummary.addEventListener("click", event => {
+        const button = event.target.closest("[data-hunt-type]");
+        if (!button || !HUNT_COUNT_TYPES.includes(button.dataset.huntType)) return;
+        const type = button.dataset.huntType;
+        let dayCount = huntCounts.find(count =>
+          count.characterId === selectedCharacterId && count.date === selectedDate
+        );
+        if (!dayCount) {
+          dayCount = {
+            characterId: selectedCharacterId,
+            date: selectedDate,
+            metins: 0,
+            bosses: 0,
+            miniBosses: 0
+          };
+          huntCounts.push(dayCount);
+        }
+        if (!Number.isSafeInteger(dayCount[type] + 1)) {
+          showNotice("Osiągnięto maksymalną liczbę zliczeń dla tego dnia.");
+          return;
+        }
+        dayCount[type]++;
+        saveData();
+        renderHuntCounts();
+      });
       elements.financeForm.addEventListener("submit", event => {
         event.preventDefault();
         const earned = readYangInput(elements.financeEarned);
@@ -1176,6 +1374,57 @@
         elements.taskDateDialog.close();
       });
 
+      elements.addTaskPattern.addEventListener("click", () => {
+        const startDate = elements.date.value || selectedDate;
+        elements.taskPatternFrom.value = startDate;
+        elements.taskPatternTo.value = startDate;
+        elements.taskPatternForm.querySelectorAll('input[name="weekday"]').forEach(input => {
+          input.checked = false;
+        });
+        elements.taskPatternDialog.showModal();
+      });
+
+      document.querySelector("#cancel-task-pattern").addEventListener("click", () => {
+        elements.taskPatternDialog.close();
+      });
+
+      elements.taskPatternForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const startDate = elements.taskPatternFrom.value;
+        const endDate = elements.taskPatternTo.value;
+        if (!startDate || !endDate || endDate < startDate) {
+          showNotice("Data końcowa nie może być wcześniejsza niż data początkowa.");
+          elements.taskPatternTo.focus();
+          return;
+        }
+
+        const weekdays = new Set(
+          [...elements.taskPatternForm.querySelectorAll('input[name="weekday"]:checked')]
+            .map(input => Number(input.value))
+        );
+        if (!weekdays.size) {
+          showNotice("Wybierz co najmniej jeden dzień tygodnia.");
+          return;
+        }
+
+        const dates = [];
+        const date = new Date(`${startDate}T12:00:00`);
+        const lastDate = new Date(`${endDate}T12:00:00`);
+        while (date <= lastDate) {
+          if (weekdays.has((date.getDay() + 6) % 7)) dates.push(toDateKey(date));
+          date.setDate(date.getDate() + 1);
+        }
+        if (!dates.length) {
+          showNotice("W wybranym zakresie nie ma żadnego z zaznaczonych dni tygodnia.");
+          return;
+        }
+
+        selectedTaskDates = dates;
+        elements.date.value = dates[0];
+        renderTaskDates();
+        elements.taskPatternDialog.close();
+      });
+
       elements.taskDateList.addEventListener("click", event => {
         const button = event.target.closest("[data-remove-date]");
         if (!button) return;
@@ -1200,8 +1449,9 @@
             return;
           }
           const completedDates = completedDatesForTask(task).filter(completedDate => dates.includes(completedDate));
+          const completedAtByDate = completionTimesForTask(task, dates);
           Object.assign(task, {
-            title, date, dates, completedDates,
+            title, date, dates, completedDates, completedAtByDate,
             done: dates.every(taskDate => completedDates.includes(taskDate)),
             category: elements.category.value,
             note: elements.note.value.trim()
@@ -1235,9 +1485,16 @@
         const task = tasks.find(item => item.id === checkbox.dataset.id);
         if (!task) return;
         const completedDates = new Set(completedDatesForTask(task));
-        if (checkbox.checked) completedDates.add(selectedDate);
-        else completedDates.delete(selectedDate);
+        const completedAtByDate = completionTimesForTask(task);
+        if (checkbox.checked) {
+          completedDates.add(selectedDate);
+          completedAtByDate[selectedDate] = new Date().toISOString();
+        } else {
+          completedDates.delete(selectedDate);
+          delete completedAtByDate[selectedDate];
+        }
         task.completedDates = [...completedDates].sort();
+        task.completedAtByDate = completedAtByDate;
         task.done = datesForTask(task).every(date => completedDates.has(date));
         saveData();
         render();
@@ -1263,10 +1520,12 @@
           const dates = datesForTask(task).filter(date => date !== selectedDate);
           if (dates.length) {
             const completedDates = completedDatesForTask(task).filter(date => date !== selectedDate && dates.includes(date));
+            const completedAtByDate = completionTimesForTask(task, dates);
             Object.assign(task, {
               date: dates[0],
               dates,
               completedDates,
+              completedAtByDate,
               done: dates.every(date => completedDates.includes(date))
             });
           } else {
@@ -1308,11 +1567,13 @@
           const dates = datesForTask(task).filter(date => date !== selectedDate);
           if (!dates.length) return [];
           const completedDates = completedDatesForTask(task).filter(date => date !== selectedDate && dates.includes(date));
+          const completedAtByDate = completionTimesForTask(task, dates);
           return [{
             ...task,
             date: dates[0],
             dates,
             completedDates,
+            completedAtByDate,
             done: dates.every(date => completedDates.includes(date))
           }];
         });
