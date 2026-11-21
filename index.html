@@ -514,6 +514,7 @@
       let dayNotes;
       let dayFinances;
       let huntCounts;
+      let latestDesktopSnapshot = null;
       let selectedTaskDates = [todayKey];
       const dayNoteDrafts = new Map();
 
@@ -823,11 +824,13 @@
         const generation = ++saveGeneration;
         const snapshot = { version: 1, tasks, dayNotes, dayFinances, huntCounts, characters, selectedCharacterId };
         const serializedSnapshot = JSON.stringify(snapshot);
+        if (isDesktopApp) latestDesktopSnapshot = JSON.parse(serializedSnapshot);
         const handle = fileHandle;
         elements.storageLabel.textContent = isDesktopApp || handle ? "Zapisywanie pliku JSON…" : "Zapisywanie w przeglądarce…";
         const request = saveQueue.then(async () => {
           if (isDesktopApp) {
-            const result = await window.metinDesktop.saveData(JSON.parse(serializedSnapshot));
+            const result = window.metinDesktop.saveDataSync(JSON.parse(serializedSnapshot));
+            if (!result.saved) throw new Error(result.error);
             elements.footerNote.textContent = `Plik danych: ${result.dataPath}`;
           } else if (handle) {
             saveLocalBackup(snapshot);
@@ -858,6 +861,14 @@
           if (generation === saveGeneration) elements.storageLabel.textContent = "Błąd zapisu";
           showNotice(`Nie udało się zapisać danych${isDesktopApp || handle ? " do pliku JSON" : ""}: ${error.message}`);
           return false;
+        });
+      }
+
+      if (isDesktopApp) {
+        window.addEventListener("beforeunload", () => {
+          if (latestDesktopSnapshot) {
+            window.metinDesktop.saveDataSync(latestDesktopSnapshot);
+          }
         });
       }
 

@@ -2,12 +2,14 @@
 
 const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const fs = require("node:fs/promises");
+const fsSync = require("node:fs");
 const path = require("node:path");
 
 const defaultCharacter = { id: "dropszeusz", name: "Dropszeusz" };
 const emptyData = {
   version: 1,
   tasks: [],
+  dayNotes: [],
   dayFinances: [],
   huntCounts: [],
   characters: [defaultCharacter],
@@ -52,6 +54,19 @@ function isValidData(data) {
       const key = `${finance.characterId}\u0000${finance.date}`;
       if (financeKeys.has(key)) return false;
       financeKeys.add(key);
+    }
+  }
+  if (data.dayNotes !== undefined) {
+    if (!Array.isArray(data.dayNotes) || data.dayNotes.length > 100000) return false;
+    for (const note of data.dayNotes) {
+      if (
+        !note || typeof note.characterId !== "string" ||
+        !characterIds.has(note.characterId) ||
+        typeof note.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(note.date) ||
+        typeof note.text !== "string"
+      ) {
+        return false;
+      }
     }
   }
   if (data.huntCounts !== undefined) {
@@ -117,6 +132,20 @@ async function writeData(data) {
   await fs.rename(temporaryFile, dataFile);
 }
 
+function writeDataSync(data) {
+  if (!isValidData(data)) throw new Error("Dane zadań lub postaci mają nieprawidłowy format.");
+  fsSync.mkdirSync(path.dirname(dataFile), { recursive: true });
+  const temporaryFile = `${dataFile}.${process.pid}.tmp`;
+  const file = fsSync.openSync(temporaryFile, "w");
+  try {
+    fsSync.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+    fsSync.fsyncSync(file);
+  } finally {
+    fsSync.closeSync(file);
+  }
+  fsSync.renameSync(temporaryFile, dataFile);
+}
+
 ipcMain.handle("metin:data:load", async (_event, fallbackData) => {
   try {
     const contents = await fs.readFile(dataFile, "utf8");
@@ -146,6 +175,15 @@ ipcMain.handle("metin:data:load", async (_event, fallbackData) => {
 ipcMain.handle("metin:data:save", async (_event, data) => {
   await writeData(data);
   return { saved: true, dataPath: dataFile };
+});
+
+ipcMain.on("metin:data:save-sync", (event, data) => {
+  try {
+    writeDataSync(data);
+    event.returnValue = { saved: true, dataPath: dataFile };
+  } catch (error) {
+    event.returnValue = { saved: false, error: error.message };
+  }
 });
 
 ipcMain.handle("metin:data:show-folder", async () => {
