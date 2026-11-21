@@ -30,5 +30,3 @@ Wynikowy plik `.exe` pojawi się w folderze `dist`.
 Można nadal otwierać `index.html` bezpośrednio w Chrome lub Edge. W przeglądarce wybierz plik JSON, żeby aplikacja mogła go aktualizować; wersja EXE zapisuje dane automatycznie i nie potrzebuje tego kroku.
 
 
-## Do zrobienia
--Książki i biolog: wpisywanie dziennej liczby prób i zaznaczanie, czy weszło; nieudana próba nie zmniejsza liczby pozostałych a d.
