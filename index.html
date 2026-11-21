@@ -136,6 +136,37 @@
     .hunt-add-button { flex: 0 0 auto; padding: 7px 9px; border: 1px solid var(--line); border-radius: 4px; color: var(--accent-bright); background: var(--panel-soft); cursor: pointer; font-size: 11px; }
     .hunt-add-button:hover { border-color: #5b604f; color: var(--text); }
 
+    .activity-panel { margin-bottom: 14px; }
+    .activity-heading { width: 100%; }
+    .activity-toggle { margin-left: auto; min-width: 72px; }
+    .activity-grid.collapsed { display: none; }
+    .activity-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 20px 20px; }
+    .activity-card { min-width: 0; padding: 13px; border: 1px solid var(--line); border-radius: 5px; background: #191713; }
+    .activity-card.ready { border-color: #6d8058; background: #20251b; }
+    .activity-card h3 { margin: 0 0 10px; font-size: 13px; font-weight: 650; }
+    .activity-form { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .activity-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .activity-field { display: grid; gap: 5px; color: var(--muted); font-size: 10px; }
+    .activity-field .field { height: 34px; }
+    .activity-status { display: flex; min-height: 36px; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0; color: var(--muted); font-size: 11px; }
+    .activity-status strong { color: var(--accent-bright); font-variant-numeric: tabular-nums; }
+    .activity-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .activity-actions .secondary-button, .activity-actions .add-button { min-height: 34px; }
+    .activity-list { display: grid; gap: 8px; margin-top: 10px; }
+    .activity-item { padding: 10px; border: 1px solid var(--line); border-radius: 4px; background: #211e19; }
+    .activity-item-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .activity-name { font-size: 12px; font-weight: 650; }
+    .activity-progress { color: var(--accent-bright); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .activity-empty { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+    .now-panel { margin-bottom: 14px; }
+    .now-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0 20px 20px; }
+    .now-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: #191713; }
+    .now-item.ready { border-color: #6d8058; background: #20251b; }
+    .now-item-title { display: grid; gap: 3px; font-size: 12px; }
+    .now-item-title span { color: var(--muted); font-size: 10px; }
+    .now-time { color: var(--accent-bright); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .now-item.ready .now-time { color: #a9bc8d; font-weight: 700; }
+
     .workspace { display: grid; grid-template-columns: minmax(300px, .82fr) minmax(0, 1.55fr); gap: 14px; align-items: start; }
     .panel { min-width: 0; overflow: hidden; }
     .panel, .stat-card, .characters-panel { background: var(--panel); }
@@ -180,6 +211,7 @@
     .day-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
     .day-dot.done { background: var(--green); }
     .day-dot.note { background: #b7a3d0; }
+    .day-dot.timer { background: #81a9b7; }
 
     .task-panel { min-height: 0; }
     .task-heading { align-items: flex-start; }
@@ -284,6 +316,8 @@
       .hunt-period { text-align: left; }
       .hunt-summary { grid-template-columns: 1fr; margin-right: 14px; margin-left: 14px; }
       .hunt-stat + .hunt-stat { border-top: 1px solid var(--line); border-left: 0; }
+      .activity-grid { grid-template-columns: 1fr; padding-right: 14px; padding-left: 14px; }
+      .now-list { grid-template-columns: 1fr; padding-right: 14px; padding-left: 14px; }
       .panel-heading { padding-right: 14px; padding-left: 14px; }
       .calendar { padding-right: 10px; padding-left: 10px; }
       .day { min-height: 43px; }
@@ -384,6 +418,98 @@
             <button class="hunt-add-button" type="button" data-hunt-type="miniBosses" aria-label="Dodaj minibossa">+1 Miniboss</button>
           </div>
           <p class="hunt-month-total">W miesiącu: <strong id="hunt-mini-bosses-month">0</strong></p>
+        </article>
+        <article class="hunt-stat">
+          <div class="hunt-stat-top">
+            <div><span class="hunt-stat-label">Księgi łatwe · wybrany dzień</span><strong class="hunt-day-total" id="hunt-easy-day">0</strong></div>
+            <button class="hunt-add-button" type="button" data-hunt-type="easy" aria-label="Dodaj łatwą księgę misji">+1 Łatwa</button>
+          </div>
+          <p class="hunt-month-total">W miesiącu: <strong id="hunt-easy-month">0</strong></p>
+        </article>
+        <article class="hunt-stat">
+          <div class="hunt-stat-top">
+            <div><span class="hunt-stat-label">Księgi średnie · wybrany dzień</span><strong class="hunt-day-total" id="hunt-medium-day">0</strong></div>
+            <button class="hunt-add-button" type="button" data-hunt-type="medium" aria-label="Dodaj średnią księgę misji">+1 Średnia</button>
+          </div>
+          <p class="hunt-month-total">W miesiącu: <strong id="hunt-medium-month">0</strong></p>
+        </article>
+        <article class="hunt-stat">
+          <div class="hunt-stat-top">
+            <div><span class="hunt-stat-label">Księgi trudne · wybrany dzień</span><strong class="hunt-day-total" id="hunt-hard-day">0</strong></div>
+            <button class="hunt-add-button" type="button" data-hunt-type="hard" aria-label="Dodaj trudną księgę misji">+1 Trudna</button>
+          </div>
+          <p class="hunt-month-total">W miesiącu: <strong id="hunt-hard-month">0</strong></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel now-panel" aria-labelledby="now-title">
+      <div class="panel-heading">
+        <h2 id="now-title">Na teraz / Dzisiaj</h2>
+        <span class="hunt-period" id="now-date"></span>
+      </div>
+      <div class="now-list" id="now-list"></div>
+    </section>
+
+    <section class="panel activity-panel" aria-labelledby="activity-title">
+      <div class="panel-heading activity-heading">
+        <h2 id="activity-title">Aktywności dzienne postaci</h2>
+        <button class="secondary-button activity-toggle" id="activity-toggle" type="button" aria-expanded="true" aria-controls="activity-grid">Zwiń</button>
+      </div>
+      <div class="activity-grid" id="activity-grid">
+        <article class="activity-card" id="skill-card">
+          <h3>Księgi Umiejętności</h3>
+          <form class="activity-form" id="skill-form">
+            <label class="activity-field">Nazwa umiejętności
+              <input class="field" id="skill-name" maxlength="80" required placeholder="Np. Potężny cios">
+            </label>
+            <div class="activity-row">
+              <label class="activity-field">Poziom
+                <input class="field" id="skill-level" maxlength="10" value="M1" required>
+              </label>
+              <label class="activity-field">Cel ksiąg
+                <input class="field" id="skill-target" type="number" min="1" max="100000" value="55" required>
+              </label>
+            </div>
+            <div class="activity-row">
+              <label class="activity-field">Cooldown
+                <input class="field" id="skill-cooldown" type="number" min="1" max="100000" step="1" value="24" required>
+              </label>
+              <label class="activity-field">Jednostka
+                <select class="field" id="skill-cooldown-unit">
+                  <option value="60">Godziny</option>
+                  <option value="1">Minuty</option>
+                </select>
+              </label>
+            </div>
+            <button class="add-button" type="submit">Dodaj umiejętność</button>
+          </form>
+          <div class="activity-list" id="skill-list"></div>
+        </article>
+
+        <article class="activity-card" id="biolog-card">
+          <h3>Badania Biologa</h3>
+          <form class="activity-form" id="biolog-form">
+            <label class="activity-field">Nazwa etapu
+              <input class="field" id="biolog-name" maxlength="80" required placeholder="Wpisz nazwę badania">
+            </label>
+            <label class="activity-field">Potrzebne
+              <input class="field" id="biolog-target" type="number" min="1" max="100000" value="10" required>
+            </label>
+            <div class="activity-row">
+              <label class="activity-field">Cooldown
+                <input class="field" id="biolog-cooldown" type="number" min="1" max="100000" step="1" value="24" required>
+              </label>
+              <label class="activity-field">Jednostka
+                <select class="field" id="biolog-cooldown-unit">
+                  <option value="60">Godziny</option>
+                  <option value="1">Minuty</option>
+                </select>
+              </label>
+            </div>
+            <button class="add-button" type="submit">Dodaj etap</button>
+          </form>
+          <div class="activity-list" id="biolog-list"></div>
         </article>
       </div>
     </section>
@@ -492,7 +618,9 @@
       const DAY_NOTES_KEY = "metin-planner-day-notes-v1";
       const DAY_FINANCES_KEY = "metin-planner-day-finances-v1";
       const HUNT_COUNTS_KEY = "metin-planner-hunt-counts-v1";
-      const HUNT_COUNT_TYPES = ["metins", "bosses", "miniBosses"];
+      const SKILL_BOOKS_KEY = "metin-planner-skill-books-v1";
+      const BIOLOG_STAGES_KEY = "metin-planner-biolog-stages-v1";
+      const HUNT_COUNT_TYPES = ["metins", "bosses", "miniBosses", "easy", "medium", "hard"];
       const SELECTED_CHARACTER_KEY = "metin-planner-selected-character-v1";
       const HANDLE_DB_NAME = "metin-planner-files";
       const HANDLE_STORE_NAME = "handles";
@@ -514,6 +642,8 @@
       let dayNotes;
       let dayFinances;
       let huntCounts;
+      let skillBooks;
+      let biologStages;
       let latestDesktopSnapshot = null;
       let selectedTaskDates = [todayKey];
       const dayNoteDrafts = new Map();
@@ -550,6 +680,12 @@
         addTaskPattern: document.querySelector("#add-task-pattern"),
         dayNoteForm: document.querySelector("#day-note-form"),
         dayNote: document.querySelector("#day-note"),
+        nowDate: document.querySelector("#now-date"),
+        nowList: document.querySelector("#now-list"),
+        skillForm: document.querySelector("#skill-form"),
+        skillList: document.querySelector("#skill-list"),
+        biologForm: document.querySelector("#biolog-form"),
+        biologList: document.querySelector("#biolog-list"),
         title: document.querySelector("#task-title"),
         category: document.querySelector("#task-category"),
         date: document.querySelector("#task-date"),
@@ -577,6 +713,8 @@
         let legacyDayNotes = [];
         let legacyDayFinances = [];
         let legacyHuntCounts = [];
+        let legacySkillBooks = [];
+        let legacyBiologStages = [];
         let legacySelectedCharacterId = DEFAULT_CHARACTER.id;
         try {
           const stored = localStorage.getItem(CHARACTERS_KEY);
@@ -634,6 +772,10 @@
             }
             legacyHuntCounts = parsedHuntCounts;
           }
+          const storedSkillBooks = localStorage.getItem(SKILL_BOOKS_KEY);
+          if (storedSkillBooks) legacySkillBooks = JSON.parse(storedSkillBooks);
+          const storedBiologStages = localStorage.getItem(BIOLOG_STAGES_KEY);
+          if (storedBiologStages) legacyBiologStages = JSON.parse(storedBiologStages);
         } catch (error) {
           showNotice(`Nie udało się odczytać części starych danych z przeglądarki: ${error.message}`);
         }
@@ -643,6 +785,8 @@
           dayNotes: legacyDayNotes,
           dayFinances: legacyDayFinances,
           huntCounts: legacyHuntCounts,
+          skillBooks: legacySkillBooks,
+          biologStages: legacyBiologStages,
           characters: legacyCharacters,
           selectedCharacterId: legacySelectedCharacterId
         };
@@ -680,7 +824,12 @@
             !count || typeof count.characterId !== "string" ||
             !characterIds.has(count.characterId) ||
             typeof count.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(count.date) ||
-            !HUNT_COUNT_TYPES.every(type => Number.isSafeInteger(count[type]) && count[type] >= 0)
+            !["metins", "bosses", "miniBosses"].every(type =>
+              Number.isSafeInteger(count[type]) && count[type] >= 0
+            ) ||
+            !["easy", "medium", "hard"].every(type =>
+              count[type] === undefined || (Number.isSafeInteger(count[type]) && count[type] >= 0)
+            )
           ) {
             return false;
           }
@@ -710,6 +859,8 @@
           )) &&
           isValidDayFinances(data.dayFinances, data.characters) &&
           isValidHuntCounts(data.huntCounts, data.characters) &&
+          (data.skillBooks === undefined || Array.isArray(data.skillBooks)) &&
+          (data.biologStages === undefined || Array.isArray(data.biologStages)) &&
           data.tasks.every(task =>
             task && typeof task.id === "string" &&
             typeof task.title === "string" &&
@@ -753,7 +904,14 @@
         });
         dayNotes = data.dayNotes || [];
         dayFinances = data.dayFinances || [];
-        huntCounts = data.huntCounts || [];
+        huntCounts = (data.huntCounts || []).map(count => ({
+          ...count,
+          easy: count.easy || 0,
+          medium: count.medium || 0,
+          hard: count.hard || 0
+        }));
+        skillBooks = data.skillBooks || [];
+        biologStages = data.biologStages || [];
       }
 
       function openHandleDatabase() {
@@ -811,6 +969,8 @@
           localStorage.setItem(DAY_NOTES_KEY, JSON.stringify(snapshot.dayNotes));
           localStorage.setItem(DAY_FINANCES_KEY, JSON.stringify(snapshot.dayFinances));
           localStorage.setItem(HUNT_COUNTS_KEY, JSON.stringify(snapshot.huntCounts));
+          localStorage.setItem(SKILL_BOOKS_KEY, JSON.stringify(snapshot.skillBooks));
+          localStorage.setItem(BIOLOG_STAGES_KEY, JSON.stringify(snapshot.biologStages));
           localStorage.setItem(CHARACTERS_KEY, JSON.stringify(snapshot.characters));
           localStorage.setItem(SELECTED_CHARACTER_KEY, snapshot.selectedCharacterId);
           return true;
@@ -822,7 +982,7 @@
 
       function saveData() {
         const generation = ++saveGeneration;
-        const snapshot = { version: 1, tasks, dayNotes, dayFinances, huntCounts, characters, selectedCharacterId };
+        const snapshot = { version: 1, tasks, dayNotes, dayFinances, huntCounts, skillBooks, biologStages, characters, selectedCharacterId };
         const serializedSnapshot = JSON.stringify(snapshot);
         if (isDesktopApp) latestDesktopSnapshot = JSON.parse(serializedSnapshot);
         const handle = fileHandle;
@@ -880,6 +1040,7 @@
             const result = await window.metinDesktop.loadData(loadLocalData());
             if (!isValidData(result.data)) throw new Error("Plik z danymi ma nieprawidłowy format.");
             applyData(result.data);
+            saveData();
             elements.storageLabel.textContent = "Zapisano na tym komputerze";
             elements.footerNote.textContent = `Plik danych: ${result.dataPath}`;
           } catch (error) {
@@ -900,6 +1061,7 @@
               if (data) {
                 fileHandle = savedHandle;
                 applyData(data);
+                saveData();
                 elements.storageLabel.textContent = `Zapisano: ${fileHandle.name}`;
                 elements.selectJson.textContent = "Zmień plik JSON";
                 elements.date.value = todayKey;
@@ -914,6 +1076,7 @@
           showNotice(`Nie udało się odczytać zapamiętanego pliku JSON. Wybierz go ponownie. (${error.message})`);
         }
         applyData(loadLocalData());
+        saveData();
         elements.storageLabel.textContent = "Zapis lokalny — wybierz plik JSON";
         elements.date.value = todayKey;
         render();
@@ -1069,13 +1232,17 @@
           const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index);
           const key = toDateKey(date);
           const dayTasks = tasksForCharacter().filter(task => datesForTask(task).includes(key));
+          const activityTimers = scheduledActivityEntries().filter(entry =>
+            toDateKey(new Date(entry.readyAt)) === key
+          );
           const hasDayNote = Boolean(dayNoteFor(key));
           const classes = ["day"];
           if (date.getMonth() !== month) classes.push("outside");
           if (key === todayKey) classes.push("today");
           if (key === selectedDate) classes.push("selected");
           const dots = dayTasks.slice(0, 3).map(task => `<span class="day-dot${isTaskDoneOnDate(task, key) ? " done" : ""}"></span>`).join("") +
-            (hasDayNote ? '<span class="day-dot note" aria-hidden="true"></span>' : "");
+            (hasDayNote ? '<span class="day-dot note" aria-hidden="true"></span>' : "") +
+            (activityTimers.length ? '<span class="day-dot timer" aria-hidden="true"></span>' : "");
           dayMarkup.push(`<button type="button" class="${classes.join(" ")}" data-date="${key}" aria-label="${escapeHTML(new Intl.DateTimeFormat("pl-PL", { dateStyle: "full" }).format(date))}, ${dayTasks.length} zadań${hasDayNote ? ", ma notatkę" : ""}" aria-pressed="${key === selectedDate}">
             <span class="day-number">${date.getDate()}</span><span class="day-dots">${dots}</span>
           </button>`);
@@ -1097,11 +1264,17 @@
             ? isTaskDoneOnDate(task, selectedDate)
             : !isTaskDoneOnDate(task, selectedDate))
         );
+        const activityTimers = scheduledActivityEntries().filter(entry =>
+          toDateKey(new Date(entry.readyAt)) === selectedDate
+        );
         elements.taskCount.textContent = `${pendingTaskCount(tasksForCharacter(), selectedDate)} do zrobienia`;
 
         if (visibleTasks.length === 0) {
           const isFiltered = dayTasks.length > 0;
-          elements.taskContent.innerHTML = `<div class="empty-state"><div class="empty-icon" aria-hidden="true"></div><strong>${isFiltered ? "Brak zadań w tym filtrze" : "Spokojny dzień — na razie bez zadań"}</strong><span>${isFiltered ? "Zmień filtr, żeby zobaczyć pozostałe wpisy." : "Dodaj zadanie powyżej albo wybierz inny dzień w kalendarzu."}</span></div>`;
+          const timerMarkup = activityTimers.length
+            ? `<div class="table-wrap"><table><thead><tr><th>Zaplaniowany timer</th><th>Godzina</th></tr></thead><tbody>${activityTimers.map(entry => `<tr><td><span class="task-title">${escapeHTML(entry.title)}</span></td><td>${escapeHTML(new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit" }).format(new Date(entry.readyAt)))}</td></tr>`).join("")}</tbody></table></div>`
+            : "";
+          elements.taskContent.innerHTML = timerMarkup || `<div class="empty-state"><div class="empty-icon" aria-hidden="true"></div><strong>${isFiltered ? "Brak zadań w tym filtrze" : "Spokojny dzień — na razie bez zadań"}</strong><span>${isFiltered ? "Zmień filtr, żeby zobaczyć pozostałe wpisy." : "Dodaj zadanie powyżej albo wybierz inny dzień w kalendarzu."}</span></div>`;
           return;
         }
 
@@ -1122,7 +1295,10 @@
             <td><div class="row-actions"><button class="row-button" type="button" data-action="edit" data-id="${escapeHTML(task.id)}">Edytuj</button><button class="row-button delete" type="button" data-action="delete" data-id="${escapeHTML(task.id)}" aria-label="${deleteLabel} zadanie ${escapeHTML(task.title)}${datesForTask(task).length > 1 ? ` tylko z ${escapeHTML(new Intl.DateTimeFormat("pl-PL", { dateStyle: "long" }).format(new Date(`${selectedDate}T12:00:00`)))}` : ""}">${deleteLabel}</button></div></td>
           </tr>`;
         }).join("");
-        elements.taskContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="check-cell">✓</th><th>Zadanie</th><th class="completion-time-cell">Godzina</th><th>Kategoria</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+        const timerMarkup = activityTimers.length
+          ? `<div class="table-wrap" style="border-top:1px solid var(--line)"><table><thead><tr><th>Zaplaniowany timer</th><th class="completion-time-cell">Godzina</th></tr></thead><tbody>${activityTimers.map(entry => `<tr><td><span class="task-title">${escapeHTML(entry.title)}</span></td><td>${escapeHTML(new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit" }).format(new Date(entry.readyAt)))}</td></tr>`).join("")}</tbody></table></div>`
+          : "";
+        elements.taskContent.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="check-cell">✓</th><th>Zadanie</th><th class="completion-time-cell">Godzina</th><th>Kategoria</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>${timerMarkup}`;
       }
 
       function renderStats() {
@@ -1137,6 +1313,115 @@
         document.querySelector("#total-count").textContent = todayOccurrences.length;
       }
 
+      function makeId(prefix) {
+        return `${prefix}-${globalThis.crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
+      }
+
+      function formatCountdown(readyAt) {
+        if (!readyAt) return "Gotowe teraz";
+        const remaining = new Date(readyAt).getTime() - Date.now();
+        if (remaining <= 0) return "Gotowe teraz";
+        const totalSeconds = Math.ceil(remaining / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        if (days) return `${days}d ${hours}h ${minutes}m`;
+        if (hours) return `${hours}h ${minutes}m ${seconds}s`;
+        if (minutes) return `${minutes}m ${seconds}s`;
+        return `${seconds}s`;
+      }
+
+      function scheduledActivityEntries() {
+        return [
+          ...skillBooks
+            .filter(item => item.characterId === selectedCharacterId && item.readyAt)
+            .map(item => ({ id: item.id, title: `Księga: ${item.name}`, readyAt: item.readyAt, type: "skill" })),
+          ...biologStages
+            .filter(item => item.characterId === selectedCharacterId && item.readyAt)
+            .map(item => ({ id: item.id, title: `Biolog: ${item.name}`, readyAt: item.readyAt, type: "biolog" }))
+        ];
+      }
+
+      function renderActivities() {
+        const now = Date.now();
+        const entries = scheduledActivityEntries();
+        elements.nowDate.textContent = new Intl.DateTimeFormat("pl-PL", { dateStyle: "full" })
+          .format(new Date());
+        if (!entries.length) {
+          elements.nowList.innerHTML = '<div class="activity-empty">Brak aktywnych timerów dla tej postaci.</div>';
+        } else {
+          elements.nowList.innerHTML = entries
+            .sort((a, b) => new Date(a.readyAt).getTime() - new Date(b.readyAt).getTime())
+            .map(entry => {
+              const ready = new Date(entry.readyAt).getTime() <= now;
+              const time = ready
+                ? "Gotowe — kliknij i wykonaj"
+                : new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit" }).format(new Date(entry.readyAt));
+              return `<div class="now-item${ready ? " ready" : ""}">
+                <div class="now-item-title">${escapeHTML(entry.title)}<span>${escapeHTML(new Intl.DateTimeFormat("pl-PL", { dateStyle: "medium", hour: "2-digit", minute: "2-digit" }).format(new Date(entry.readyAt)))}</span></div>
+                <strong class="now-time${ready ? "" : ""}" data-ready-at="${escapeHTML(entry.readyAt)}">${ready ? "Gotowe teraz" : escapeHTML(formatCountdown(entry.readyAt))}</strong>
+              </div>`;
+            }).join("");
+        }
+
+        const characterSkills = skillBooks.filter(item => item.characterId === selectedCharacterId);
+        elements.skillList.innerHTML = characterSkills.length
+          ? characterSkills.map(item => {
+              const ready = !item.readyAt || new Date(item.readyAt).getTime() <= now;
+              return `<article class="activity-item${ready ? " ready" : ""}">
+                <div class="activity-item-head">
+                  <span class="activity-name">${escapeHTML(item.name)} · ${escapeHTML(item.level)}</span>
+                  <span class="activity-progress">${item.progress}/${item.target}</span>
+                </div>
+                <div class="activity-status">
+                  <span>Cooldown</span>
+                  <strong>${ready ? "Gotowe" : escapeHTML(formatCountdown(item.readyAt))}</strong>
+                </div>
+                <label class="activity-field">Cooldown (minuty)
+                  <input class="field" type="number" min="1" max="100000" step="1" value="${item.cooldownMinutes || (item.cooldownHours * 60)}" data-skill-cooldown="${escapeHTML(item.id)}">
+                </label>
+                <div class="activity-actions">
+                  <label class="weekday-choice"><input type="checkbox" data-exorcism="${escapeHTML(item.id)}"> Zwoje Egzorcyzmu</label>
+                  <button class="add-button" type="button" data-skill-success="${escapeHTML(item.id)}">Przeczytano pomyślnie</button>
+                  <button class="secondary-button" type="button" data-skill-fail="${escapeHTML(item.id)}">Niepowodzenie (Spalono)</button>
+                  <button class="row-button delete" type="button" data-skill-delete="${escapeHTML(item.id)}">Usuń</button>
+                </div>
+              </article>`;
+            }).join("")
+          : '<p class="activity-empty">Dodaj pierwszą umiejętność.</p>';
+
+        const characterStages = biologStages.filter(item => item.characterId === selectedCharacterId);
+        elements.biologList.innerHTML = characterStages.length
+          ? characterStages.map(item => {
+              const ready = !item.readyAt || new Date(item.readyAt).getTime() <= now;
+              return `<article class="activity-item${ready ? " ready" : ""}">
+                <div class="activity-item-head">
+                  <span class="activity-name">${escapeHTML(item.name)}</span>
+                  <span class="activity-progress">${item.progress}/${item.target}</span>
+                </div>
+                <div class="activity-status"><span>Cooldown</span><strong>${ready ? "Gotowe" : escapeHTML(formatCountdown(item.readyAt))}</strong></div>
+                <label class="activity-field">Cooldown (minuty)
+                  <input class="field" type="number" min="1" max="100000" step="1" value="${item.cooldownMinutes || (item.cooldownHours * 60)}" data-biolog-cooldown="${escapeHTML(item.id)}">
+                </label>
+                <div class="activity-actions">
+                  <button class="add-button" type="button" data-biolog-success="${escapeHTML(item.id)}" ${ready ? "" : "disabled"}>Oddano pomyślnie</button>
+                  <button class="secondary-button" type="button" data-biolog-reject="${escapeHTML(item.id)}" ${ready ? "" : "disabled"}>Odrzucono</button>
+                  <select class="field" style="width:auto" data-biolog-reset-percent="${escapeHTML(item.id)}" aria-label="Skrócenie timeru">
+                    <option value="25">Spirala -25%</option>
+                    <option value="50">Spirala -50%</option>
+                    <option value="75">Spirala -75%</option>
+                    <option value="100">Spirala - reset</option>
+                  </select>
+                  <button class="secondary-button" type="button" data-biolog-reset="${escapeHTML(item.id)}">Użyj</button>
+                  <button class="row-button delete" type="button" data-biolog-delete="${escapeHTML(item.id)}">Usuń</button>
+                </div>
+              </article>`;
+            }).join("")
+          : '<p class="activity-empty">Dodaj etap badania albo dodamy standardowe przykłady.</p>';
+
+      }
+
       function renderHuntCounts() {
         const monthKey = `${shownMonth.getFullYear()}-${String(shownMonth.getMonth() + 1).padStart(2, "0")}`;
         const dayCount = huntCounts.find(count =>
@@ -1149,7 +1434,14 @@
         const dateLabel = new Intl.DateTimeFormat("pl-PL", { dateStyle: "medium" })
           .format(new Date(`${selectedDate}T12:00:00`));
         elements.huntPeriod.textContent = `${dateLabel} · ${monthLabel}`;
-        const typeIds = { metins: "metins", bosses: "bosses", miniBosses: "mini-bosses" };
+        const typeIds = {
+          metins: "metins",
+          bosses: "bosses",
+          miniBosses: "mini-bosses",
+          easy: "easy",
+          medium: "medium",
+          hard: "hard"
+        };
         for (const type of HUNT_COUNT_TYPES) {
           document.querySelector(`#hunt-${typeIds[type]}-day`).textContent = dayCount?.[type] || 0;
           const monthTotal = monthCounts.reduce((total, count) => total + BigInt(count[type]), 0n);
@@ -1189,6 +1481,7 @@
         renderStats();
         renderFinance();
         renderHuntCounts();
+        renderActivities();
       }
 
       function resetForm() {
@@ -1239,9 +1532,15 @@
             date: selectedDate,
             metins: 0,
             bosses: 0,
-            miniBosses: 0
+            miniBosses: 0,
+            easy: 0,
+            medium: 0,
+            hard: 0
           };
           huntCounts.push(dayCount);
+        }
+        for (const type of ["easy", "medium", "hard"]) {
+          if (!Number.isSafeInteger(dayCount[type]) || dayCount[type] < 0) dayCount[type] = 0;
         }
         if (!Number.isSafeInteger(dayCount[type] + 1)) {
           showNotice("Osiągnięto maksymalną liczbę zliczeń dla tego dnia.");
@@ -1251,6 +1550,168 @@
         saveData();
         renderHuntCounts();
       });
+
+      elements.skillForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const name = document.querySelector("#skill-name").value.trim();
+        const level = document.querySelector("#skill-level").value.trim();
+        const target = Number(document.querySelector("#skill-target").value);
+        const cooldownValue = Number(document.querySelector("#skill-cooldown").value);
+        const cooldownUnit = Number(document.querySelector("#skill-cooldown-unit").value);
+        const cooldownMinutes = cooldownValue * cooldownUnit;
+        if (!name || !level || !Number.isSafeInteger(target) || target < 1 ||
+            !Number.isSafeInteger(cooldownMinutes) || cooldownMinutes < 1) {
+          showNotice("Uzupełnij nazwę, poziom, cel i cooldown umiejętności.");
+          return;
+        }
+        skillBooks.push({
+          id: makeId("skill"),
+          characterId: selectedCharacterId,
+          name,
+          level,
+          progress: 0,
+          target,
+          cooldownMinutes,
+          readyAt: null
+        });
+        elements.skillForm.reset();
+        document.querySelector("#skill-level").value = "M1";
+        document.querySelector("#skill-target").value = "55";
+        document.querySelector("#skill-cooldown").value = "24";
+        saveData();
+        renderActivities();
+      });
+
+      elements.biologForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const name = document.querySelector("#biolog-name").value.trim();
+        const target = Number(document.querySelector("#biolog-target").value);
+        const cooldownValue = Number(document.querySelector("#biolog-cooldown").value);
+        const cooldownUnit = Number(document.querySelector("#biolog-cooldown-unit").value);
+        const cooldownMinutes = cooldownValue * cooldownUnit;
+        if (!name || !Number.isSafeInteger(target) || target < 1 ||
+            !Number.isSafeInteger(cooldownMinutes) || cooldownMinutes < 1) {
+          showNotice("Uzupełnij nazwę, cel i cooldown badania.");
+          return;
+        }
+        biologStages.push({
+          id: makeId("biolog"),
+          characterId: selectedCharacterId,
+          name,
+          progress: 0,
+          target,
+          cooldownMinutes,
+          readyAt: null
+        });
+        elements.biologForm.reset();
+        document.querySelector("#biolog-target").value = "10";
+        document.querySelector("#biolog-cooldown").value = "24";
+        saveData();
+        renderActivities();
+      });
+
+      elements.skillList.addEventListener("click", event => {
+        const successButton = event.target.closest("[data-skill-success]");
+        const failButton = event.target.closest("[data-skill-fail]");
+        const deleteButton = event.target.closest("[data-skill-delete]");
+        const id = successButton?.dataset.skillSuccess || failButton?.dataset.skillFail || deleteButton?.dataset.skillDelete;
+        if (!id) return;
+        const item = skillBooks.find(skill => skill.id === id);
+        if (!item) return;
+        if (deleteButton) {
+          skillBooks = skillBooks.filter(skill => skill.id !== id);
+        } else {
+          const exorcism = Boolean(document.querySelector(`[data-exorcism="${CSS.escape(id)}"]`)?.checked);
+          if (!exorcism && item.readyAt && new Date(item.readyAt).getTime() > Date.now()) {
+            showNotice(`Księga „${item.name}” oczekuje na cooldown: ${formatCountdown(item.readyAt)}.`);
+            return;
+          }
+          if (successButton) item.progress = Math.min(item.target, item.progress + 1);
+          item.readyAt = exorcism ? null : new Date(Date.now() + (item.cooldownMinutes || item.cooldownHours * 60) * 60000).toISOString();
+          if (item.progress >= item.target) {
+            showNotice(`${item.name}: osiągnięto cel ${item.target}. Zmień poziom i kontynuuj rozwój.`);
+          }
+        }
+        saveData();
+        renderActivities();
+        renderCalendar();
+      });
+
+      elements.skillList.addEventListener("change", event => {
+        const cooldownInput = event.target.closest("[data-skill-cooldown]");
+        if (!cooldownInput) return;
+        const item = skillBooks.find(skill => skill.id === cooldownInput.dataset.skillCooldown);
+        const minutes = Number(cooldownInput.value);
+        if (!item || !Number.isSafeInteger(minutes) || minutes < 1) return;
+        item.cooldownMinutes = minutes;
+        saveData();
+      });
+
+      elements.biologList.addEventListener("click", event => {
+        const successButton = event.target.closest("[data-biolog-success]");
+        const rejectButton = event.target.closest("[data-biolog-reject]");
+        const resetButton = event.target.closest("[data-biolog-reset]");
+        const deleteButton = event.target.closest("[data-biolog-delete]");
+        const id = successButton?.dataset.biologSuccess || rejectButton?.dataset.biologReject ||
+          resetButton?.dataset.biologReset || deleteButton?.dataset.biologDelete;
+        if (!id) return;
+        const item = biologStages.find(stage => stage.id === id);
+        if (!item) return;
+        if (deleteButton) {
+          biologStages = biologStages.filter(stage => stage.id !== id);
+        } else if (resetButton) {
+          if (!item.readyAt) {
+            showNotice("Ten etap nie ma aktywnego cooldownu.");
+          } else {
+            const percent = Number(document.querySelector(`[data-biolog-reset-percent="${CSS.escape(id)}"]`)?.value || 100);
+            if (percent >= 100) item.readyAt = null;
+            else {
+              const remaining = new Date(item.readyAt).getTime() - Date.now();
+              item.readyAt = remaining > 0
+                ? new Date(Date.now() + remaining * (1 - percent / 100)).toISOString()
+                : null;
+            }
+          }
+        } else {
+          if (item.readyAt && new Date(item.readyAt).getTime() > Date.now()) {
+            showNotice(`Badanie „${item.name}” oczekuje na cooldown: ${formatCountdown(item.readyAt)}.`);
+            return;
+          }
+          if (successButton) item.progress = Math.min(item.target, item.progress + 1);
+          item.readyAt = new Date(Date.now() + (item.cooldownMinutes || item.cooldownHours * 60) * 60000).toISOString();
+          if (item.progress >= item.target) showNotice(`${item.name}: osiągnięto wymagany postęp.`);
+        }
+        saveData();
+        renderActivities();
+        renderCalendar();
+      });
+
+      elements.biologList.addEventListener("change", event => {
+        const cooldownInput = event.target.closest("[data-biolog-cooldown]");
+        if (!cooldownInput) return;
+        const item = biologStages.find(stage => stage.id === cooldownInput.dataset.biologCooldown);
+        const minutes = Number(cooldownInput.value);
+        if (!item || !Number.isSafeInteger(minutes) || minutes < 1) return;
+        item.cooldownMinutes = minutes;
+        saveData();
+      });
+
+      const activityGrid = document.querySelector("#activity-grid");
+      const activityToggle = document.querySelector("#activity-toggle");
+      function setActivityCollapsed(collapsed) {
+        activityGrid.classList.toggle("collapsed", collapsed);
+        activityToggle.textContent = collapsed ? "Rozwiń" : "Zwiń";
+        activityToggle.setAttribute("aria-expanded", String(!collapsed));
+      }
+      activityToggle.addEventListener("click", () => {
+        setActivityCollapsed(!activityGrid.classList.contains("collapsed"));
+      });
+      setActivityCollapsed(true);
+
+      setInterval(() => {
+        renderActivities();
+        renderCalendar();
+      }, 1000);
       elements.financeForm.addEventListener("submit", event => {
         event.preventDefault();
         const earned = readYangInput(elements.financeEarned);

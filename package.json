@@ -1,6 +1,6 @@
 {
   "name": "metin2-dziennik-wypraw",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Lokalny dziennik zadań dla postaci w Metin2",
   "private": true,
   "main": "main.js",

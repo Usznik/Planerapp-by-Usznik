@@ -12,6 +12,8 @@ const emptyData = {
   dayNotes: [],
   dayFinances: [],
   huntCounts: [],
+  skillBooks: [],
+  biologStages: [],
   characters: [defaultCharacter],
   selectedCharacterId: defaultCharacter.id
 };
@@ -79,7 +81,10 @@ function isValidData(data) {
         typeof count.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(count.date) ||
         !Number.isSafeInteger(count.metins) || count.metins < 0 ||
         !Number.isSafeInteger(count.bosses) || count.bosses < 0 ||
-        !Number.isSafeInteger(count.miniBosses) || count.miniBosses < 0
+        !Number.isSafeInteger(count.miniBosses) || count.miniBosses < 0 ||
+        (count.easy !== undefined && (!Number.isSafeInteger(count.easy) || count.easy < 0)) ||
+        (count.medium !== undefined && (!Number.isSafeInteger(count.medium) || count.medium < 0)) ||
+        (count.hard !== undefined && (!Number.isSafeInteger(count.hard) || count.hard < 0))
       ) {
         return false;
       }
@@ -87,6 +92,34 @@ function isValidData(data) {
       if (countKeys.has(key)) return false;
       countKeys.add(key);
     }
+  }
+  if (data.skillBooks !== undefined) {
+    if (!Array.isArray(data.skillBooks) || data.skillBooks.length > 10000) return false;
+    if (!data.skillBooks.every(item =>
+      item && typeof item.characterId === "string" && characterIds.has(item.characterId) &&
+      typeof item.id === "string" && typeof item.name === "string" &&
+      typeof item.level === "string" && Number.isSafeInteger(item.progress) && item.progress >= 0 &&
+      Number.isSafeInteger(item.target) && item.target > 0 &&
+      (
+        (Number.isSafeInteger(item.cooldownMinutes) && item.cooldownMinutes > 0) ||
+        (typeof item.cooldownHours === "number" && item.cooldownHours > 0)
+      ) &&
+      (item.readyAt === null || (typeof item.readyAt === "string" && !Number.isNaN(Date.parse(item.readyAt))))
+    )) return false;
+  }
+  if (data.biologStages !== undefined) {
+    if (!Array.isArray(data.biologStages) || data.biologStages.length > 10000) return false;
+    if (!data.biologStages.every(item =>
+      item && typeof item.characterId === "string" && characterIds.has(item.characterId) &&
+      typeof item.id === "string" && typeof item.name === "string" &&
+      Number.isSafeInteger(item.progress) && item.progress >= 0 &&
+      Number.isSafeInteger(item.target) && item.target > 0 &&
+      (
+        (Number.isSafeInteger(item.cooldownMinutes) && item.cooldownMinutes > 0) ||
+        (typeof item.cooldownHours === "number" && item.cooldownHours > 0)
+      ) &&
+      (item.readyAt === null || (typeof item.readyAt === "string" && !Number.isNaN(Date.parse(item.readyAt))))
+    )) return false;
   }
   return data.tasks.every(task =>
     task && typeof task.id === "string" &&
